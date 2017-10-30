@@ -1,0 +1,14 @@
+IF you are able to Browse Then this is not for you,When not take a look at it
+
+
+First Thanks for iptables and rsyslogd which made my work easier.
+
+
+Secondly They may make your work difficult :(( , This application only works if you configured iptables and rsyslogd correctly , 
+
+
+Iptables_Configurtion:When i tried this on Ubuntu(I will be using debian distro and i did not get any problem ) Iptables shown some error "xtables lock" which prevents modifaction of iptables  do  a google search to configure that , 
+
+
+
+Rsyslogd:To know whether rsyslogd is working or not open file /var/log/iptables80.log and /var/log/iptables443.log , If you find some text in them then you are good to go , If not do a google search about configuring rsyslogd.conf files and look at /etc/rsyslog.d/iptables80.conf and /etc/rsyslog.d/iptables443.conf , feel free to change them , The importance of rsyslogd is it pulls out the kernel iptables log and saves it to file /var/log/iptables80.log and /var/log/iptables443.log and by reading them proxifier can understand your desired Destination IP
