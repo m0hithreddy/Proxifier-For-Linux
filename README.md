@@ -12,7 +12,7 @@ You can find source code in my another repository Proxifier-For-Linux(Source)
 
 Here is how it works in breif...
 
-1.When you run 'proxifier start' command from terminal it grabs the required information(username password proxyserverip proxyserverport) from file proxifier.conf.* and writes them to proxifier.conf
+1.When you run 'proxifier start n' command from terminal it grabs the required information(username password proxyserverip proxyserverport) from file proxifier.conf.n and writes them to proxifier.conf
 
 2.It also starts three servers fakehttpserver fakehttpsserver fakednsserver
 
