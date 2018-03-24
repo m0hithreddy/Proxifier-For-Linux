@@ -8,8 +8,6 @@
 
 4)make uninstall(to uninstall software from device)
 
-If Proxifier is not working take a look at debug_suggestions.txt
-
 Here's how it works in breif
 
 1.When you run 'proxifier start n' command from terminal it grabs the required information(username password proxyserverip proxyserverport) from file proxifier.conf.n and writes them to proxifier.conf
