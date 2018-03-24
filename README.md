@@ -1,16 +1,16 @@
 # Proxifier-For-Linux
 
+1)sudo su
 
-install and unistall are 'C' executable  files , change permission level to 755 with 'chmod 755 install uninstall' and run below comamands
+2)make 
 
-Install Proxifier as "sudo ./install"
-Uninstall if installed as "sudo ./uninstall"
+3)make install
+
+4)make uninstall(to uninstall software from device)
 
 If Proxifier is not working take a look at debug_suggestions.txt
 
-You can find source code in my another repository Proxifier-For-Linux(Source)
-
-Here is how it works in breif...
+Here's how it works in breif
 
 1.When you run 'proxifier start n' command from terminal it grabs the required information(username password proxyserverip proxyserverport) from file proxifier.conf.n and writes them to proxifier.conf
 
