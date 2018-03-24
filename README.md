@@ -25,7 +25,7 @@ ___________________________
 Here's how it works in breif
 ____________________________
 
-1.When you run 'proxifier start n' command from terminal it grabs the required information(username password proxyserverip proxyserverport) from file proxifier.conf.n and writes them to proxifier.conf
+1.When you run 'proxifier start <profilename>' command from terminal it grabs the required information(username password proxyserverip proxyserverport) from file proxifier.conf.<profilename> and writes them to proxifier.conf
 
 2.It also starts three servers fakehttpserver fakehttpsserver fakednsserver
 
