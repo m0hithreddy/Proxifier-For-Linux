@@ -27,7 +27,7 @@ int main(int argc,char **argv)
 		printf("Configuring System......\n\n");
 		if(argc==3)
 		{
-			sprintf(file,"/opt/proxifier/conf/proxifier.conf.%d",argv[2]);
+			sprintf(file,"/opt/proxifier/conf/proxifier.conf.%s",argv[2]);
 			FILE *fp=fopen(file,"r");
 			if(fp==NULL)
 			{
