@@ -13,9 +13,9 @@ AC_CONFIG_SRCDIR([src/proxifier.c])
 
 AC_CHECK_FILES(
 [${srcdir}/src/proxifier.c
-${srcdir}/src/fakehttpserver.c
-${srcdir}/src/fakehttpsserver.c
-${srcdir}/src/fakednsserver.c
+${srcdir}/src/proxy_http.c
+${srcdir}/src/proxy_https.c
+${srcdir}/src/proxy_dns.c
 ${srcdir}/src/logger.c
 ${srcdir}/src/proxy.c
 ${srcdir}/src/proxy.h

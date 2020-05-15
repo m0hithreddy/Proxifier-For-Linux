@@ -104,8 +104,8 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_proxifier_OBJECTS = src/proxifier.$(OBJEXT) \
-	src/fakehttpserver.$(OBJEXT) src/fakehttpsserver.$(OBJEXT) \
-	src/fakednsserver.$(OBJEXT) src/logger.$(OBJEXT) \
+	src/proxy_http.$(OBJEXT) src/proxy_https.$(OBJEXT) \
+	src/proxy_dns.$(OBJEXT) src/logger.$(OBJEXT) \
 	src/proxy.$(OBJEXT) src/socket.$(OBJEXT) src/base64.$(OBJEXT)
 proxifier_OBJECTS = $(am_proxifier_OBJECTS)
 proxifier_LDADD = $(LDADD)
@@ -124,11 +124,10 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = src/$(DEPDIR)/base64.Po \
-	src/$(DEPDIR)/fakednsserver.Po src/$(DEPDIR)/fakehttpserver.Po \
-	src/$(DEPDIR)/fakehttpsserver.Po src/$(DEPDIR)/logger.Po \
+am__depfiles_remade = src/$(DEPDIR)/base64.Po src/$(DEPDIR)/logger.Po \
 	src/$(DEPDIR)/proxifier.Po src/$(DEPDIR)/proxy.Po \
-	src/$(DEPDIR)/socket.Po
+	src/$(DEPDIR)/proxy_dns.Po src/$(DEPDIR)/proxy_http.Po \
+	src/$(DEPDIR)/proxy_https.Po src/$(DEPDIR)/socket.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -286,9 +285,9 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = -Wall -Werror foreign
 proxifier_SOURCES = \
 src/proxifier.c \
-src/fakehttpserver.c \
-src/fakehttpsserver.c \
-src/fakednsserver.c \
+src/proxy_http.c \
+src/proxy_https.c \
+src/proxy_dns.c \
 src/logger.c \
 src/proxy.c \
 src/proxy.h \
@@ -403,11 +402,11 @@ src/$(DEPDIR)/$(am__dirstamp):
 	@: > src/$(DEPDIR)/$(am__dirstamp)
 src/proxifier.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
-src/fakehttpserver.$(OBJEXT): src/$(am__dirstamp) \
+src/proxy_http.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
-src/fakehttpsserver.$(OBJEXT): src/$(am__dirstamp) \
+src/proxy_https.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
-src/fakednsserver.$(OBJEXT): src/$(am__dirstamp) \
+src/proxy_dns.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/logger.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
@@ -429,12 +428,12 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/base64.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/fakednsserver.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/fakehttpserver.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/fakehttpsserver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/logger.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxifier.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_dns.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_http.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_https.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/socket.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -730,12 +729,12 @@ clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 		-rm -f src/$(DEPDIR)/base64.Po
-	-rm -f src/$(DEPDIR)/fakednsserver.Po
-	-rm -f src/$(DEPDIR)/fakehttpserver.Po
-	-rm -f src/$(DEPDIR)/fakehttpsserver.Po
 	-rm -f src/$(DEPDIR)/logger.Po
 	-rm -f src/$(DEPDIR)/proxifier.Po
 	-rm -f src/$(DEPDIR)/proxy.Po
+	-rm -f src/$(DEPDIR)/proxy_dns.Po
+	-rm -f src/$(DEPDIR)/proxy_http.Po
+	-rm -f src/$(DEPDIR)/proxy_https.Po
 	-rm -f src/$(DEPDIR)/socket.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -785,12 +784,12 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
 		-rm -f src/$(DEPDIR)/base64.Po
-	-rm -f src/$(DEPDIR)/fakednsserver.Po
-	-rm -f src/$(DEPDIR)/fakehttpserver.Po
-	-rm -f src/$(DEPDIR)/fakehttpsserver.Po
 	-rm -f src/$(DEPDIR)/logger.Po
 	-rm -f src/$(DEPDIR)/proxifier.Po
 	-rm -f src/$(DEPDIR)/proxy.Po
+	-rm -f src/$(DEPDIR)/proxy_dns.Po
+	-rm -f src/$(DEPDIR)/proxy_http.Po
+	-rm -f src/$(DEPDIR)/proxy_https.Po
 	-rm -f src/$(DEPDIR)/socket.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic

@@ -2257,15 +2257,15 @@ else
   as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
 
 fi
-as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/fakehttpserver.c" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/fakehttpserver.c" >&5
-$as_echo_n "checking for ${srcdir}/src/fakehttpserver.c... " >&6; }
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_http.c" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_http.c" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_http.c... " >&6; }
 if eval \${$as_ac_File+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   test "$cross_compiling" = yes &&
   as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "${srcdir}/src/fakehttpserver.c"; then
+if test -r "${srcdir}/src/proxy_http.c"; then
   eval "$as_ac_File=yes"
 else
   eval "$as_ac_File=no"
@@ -2277,22 +2277,22 @@ $as_echo "$ac_res" >&6; }
 if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
 
 cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_${srcdir}/src/fakehttpserver.c" | $as_tr_cpp` 1
+#define `$as_echo "HAVE_${srcdir}/src/proxy_http.c" | $as_tr_cpp` 1
 _ACEOF
 
 else
   as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
 
 fi
-as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/fakehttpsserver.c" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/fakehttpsserver.c" >&5
-$as_echo_n "checking for ${srcdir}/src/fakehttpsserver.c... " >&6; }
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_https.c" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_https.c" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_https.c... " >&6; }
 if eval \${$as_ac_File+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   test "$cross_compiling" = yes &&
   as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "${srcdir}/src/fakehttpsserver.c"; then
+if test -r "${srcdir}/src/proxy_https.c"; then
   eval "$as_ac_File=yes"
 else
   eval "$as_ac_File=no"
@@ -2304,22 +2304,22 @@ $as_echo "$ac_res" >&6; }
 if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
 
 cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_${srcdir}/src/fakehttpsserver.c" | $as_tr_cpp` 1
+#define `$as_echo "HAVE_${srcdir}/src/proxy_https.c" | $as_tr_cpp` 1
 _ACEOF
 
 else
   as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
 
 fi
-as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/fakednsserver.c" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/fakednsserver.c" >&5
-$as_echo_n "checking for ${srcdir}/src/fakednsserver.c... " >&6; }
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_dns.c" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_dns.c" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_dns.c... " >&6; }
 if eval \${$as_ac_File+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   test "$cross_compiling" = yes &&
   as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "${srcdir}/src/fakednsserver.c"; then
+if test -r "${srcdir}/src/proxy_dns.c"; then
   eval "$as_ac_File=yes"
 else
   eval "$as_ac_File=no"
@@ -2331,7 +2331,7 @@ $as_echo "$ac_res" >&6; }
 if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
 
 cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_${srcdir}/src/fakednsserver.c" | $as_tr_cpp` 1
+#define `$as_echo "HAVE_${srcdir}/src/proxy_dns.c" | $as_tr_cpp` 1
 _ACEOF
 
 else
