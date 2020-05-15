@@ -1,0 +1,15 @@
+*config.h
+*config.status
+*config.log
+*autom4te.cache/
+*config.h.in~
+*aclocal.m4
+*.o
+*stamp*
+*.dirstamp
+*.deps
+*Makefile
+.autotools
+.cproject
+.project
+.settings/
