@@ -67,7 +67,7 @@ struct proxy_data* sseek(struct proxy_data* px_data, char* seq_str, long max_see
 	long seek_count = 0, seq_len = strlen(seq_str);
 
 	for ( ; seek_count < px_data->size && seek_count < max_seek; seek_count += sizeof(char)) {
-		seek_buf[0] = ((char*) px_data->data)[seek_count];
+		seek_buf[0] = *((char*) (px_data->data + seek_count));
 
 		if (ss_flags & PROXY_MODE_DELIMIT) {	// If requested for delimiting operation
 			if (strlocate(seq_str, seek_buf, 0, seq_len) != NULL)
@@ -103,7 +103,7 @@ struct proxy_data* scopy(struct proxy_data* px_data, char* seq_str, char** sc_re
 	long copy_count = 0, seq_len = strlen(seq_str);
 
 	for ( ; copy_count < px_data->size && copy_count < max_copy; copy_count += sizeof(char)) {
-		copy_buf[0] = ((char*) px_data->data)[copy_count];
+		copy_buf[0] = *((char*) (px_data->data + copy_count));
 
 		if (sc_flags & PROXY_MODE_DELIMIT) {	// If requested for delimiting operation
 			if (strlocate(seq_str, copy_buf, 0, seq_len) != NULL)
@@ -114,14 +114,14 @@ struct proxy_data* scopy(struct proxy_data* px_data, char* seq_str, char** sc_re
 				break;
 		}
 
-		place_proxy_data(copy_bag, &((struct proxy_data) {(void*) copy_buf, 1}));
+		place_proxy_data(copy_bag, &((struct proxy_data) {(void*) copy_buf, sizeof(char)}));
 	}
 
 	/* Copy the results */
 
 	if (copy_count > 0 || !(sc_flags & PROXY_MODE_NULL_RESULT)) {	/* If char copied or NULL_RESULT is not requested */
 		copy_buf[0] = '\0';
-		place_proxy_data(copy_bag, &((struct proxy_data) {(void*) copy_buf, 1}));
+		place_proxy_data(copy_bag, &((struct proxy_data) {(void*) copy_buf, sizeof(char)}));
 
 		*sc_result = (char*) (flatten_proxy_bag(copy_bag)->data);
 	}
