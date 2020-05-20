@@ -77,6 +77,7 @@ EXTENSION-HEADER 35 "
 #define HTTP_MODE_READ_RESPONSE 0b100
 
 #include "proxy_structures.h"
+#include "proxy_socket.h"
 
 struct http_request {
 	char* method;
