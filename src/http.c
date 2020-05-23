@@ -262,7 +262,10 @@ struct http_response* parse_http_response(struct proxy_data *response)
 		/* If hdr_key found then insert in s_response{} else in s_response{}->custom_headers */
 
 		if (hdrs_dict->data != NULL) {
+			/* Recompute the hdrs_dict size */
+
 			hdrs_dict->data = hdrs_dict->data + sizeof(char) * strlen(key_cmp);
+			hdrs_dict->size = strlen((char*) hdrs_dict->data);
 
 			/* Seek through spaces */
 
