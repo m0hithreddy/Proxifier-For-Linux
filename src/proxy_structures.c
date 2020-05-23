@@ -206,11 +206,11 @@ struct proxy_data* flatten_proxy_bag(struct proxy_bag *px_bag)
 	if (px_bag == NULL)
 		return px_data;
 
+	/* Compute the memory requirements of new px_data{} */
+
 	long t_size = 0;
 
-	/* Compute the total data size px_bag{} */
-
-	for (struct proxy_pocket* px_pocket = px_bag->start; px_pocket !=NULL; \
+	for (struct proxy_pocket* px_pocket = px_bag->start; px_pocket != NULL; \
 	px_pocket = px_pocket->next) {
 		t_size = t_size + px_pocket->size;
 	}
@@ -221,6 +221,9 @@ struct proxy_data* flatten_proxy_bag(struct proxy_bag *px_bag)
 	/* Copy the data in px_bag{} to px_data{}->data */
 
 	px_data->data = malloc(t_size);
+
+	if (px_data->data == NULL)
+		return px_data;
 
 	for (struct proxy_pocket* px_pocket = px_bag->start; px_pocket != NULL; \
 	px_pocket = px_pocket->next) {
