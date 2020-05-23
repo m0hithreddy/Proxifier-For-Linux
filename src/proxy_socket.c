@@ -135,12 +135,16 @@ int init_proxy_client(struct proxy_client* px_client)
 		/* If initialization succeeded */
 
 		success :
-		if (rp->ai_family == AF_INET || rp->ai_family == AF_INET6)	{
-			px_client->hostip = (char*) malloc(sizeof(char) * (rp->ai_family == AF_INET ? \
-					INET_ADDRSTRLEN : INET6_ADDRSTRLEN));
 
-			inet_ntop(rp->ai_family, rp->ai_addr, px_client->hostip, rp->ai_family == AF_INET ? \
-					INET_ADDRSTRLEN : INET6_ADDRSTRLEN);
+		if (rp->ai_family == AF_INET) {
+			px_client->hostip = (char*) malloc(sizeof(char) * INET_ADDRSTRLEN);
+			inet_ntop(AF_INET, &((struct sockaddr_in*)rp->ai_addr)->sin_addr, \
+					px_client->hostip, INET_ADDRSTRLEN);
+		}
+		else if (rp->ai_family == AF_INET6) {
+			px_client->hostip = (char*) malloc(sizeof(char) * INET6_ADDRSTRLEN);
+			inet_ntop(AF_INET6, &((struct sockaddr_in*)rp->ai_addr)->sin_addr, \
+					px_client->hostip, INET6_ADDRSTRLEN);
 		}
 
 		break;
