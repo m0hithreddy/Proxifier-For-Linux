@@ -83,6 +83,7 @@ int free_proxy_bag(struct proxy_bag** px_bag)
 	for (at = (*px_bag)->end; at != NULL; at = prev) {
 		prev = at->previous;
 		free(at->data);
+		free(at);
 	}
 
 	/* Free px_bag{} */
