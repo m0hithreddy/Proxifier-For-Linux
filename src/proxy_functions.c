@@ -84,7 +84,7 @@ struct proxy_data* sseek(struct proxy_data* px_data, char* seq_str, long max_see
 	struct proxy_data *px_update = (struct proxy_data*) malloc(sizeof(struct proxy_data));
 
 	px_update->data = px_data->data + seek_count;
-	px_update->size = px_update->size - seek_count;
+	px_update->size = px_data->size - seek_count;
 
 	return px_update;
 }
@@ -133,7 +133,7 @@ struct proxy_data* scopy(struct proxy_data* px_data, char* seq_str, char** sc_re
 	struct proxy_data* px_update = (struct proxy_data*) malloc(sizeof(struct proxy_data));
 
 	px_update->data = px_data->data + copy_count;
-	px_update->size = px_update->size - copy_count;
+	px_update->size = px_data->size - copy_count;
 
 	/* If caller requested for any seeking operation */
 
@@ -163,6 +163,11 @@ char* strappend(long nargs, ...)
 	/* Allocate memory and prepare new string */
 
 	char* t_str = (char*) malloc(sizeof(char) * (t_size + 1));
+
+	if (t_str == NULL)
+		return NULL;
+
+	*t_str = '\0';
 
 	va_start(ap, nargs);
 	for (long arg_count = 0; arg_count < nargs; arg_count++) {
