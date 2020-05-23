@@ -37,7 +37,8 @@ If-Unmodified-Since 31 \
 Max-Forwards 32 \
 Proxy-Authorization 33 \
 Range 34 \
-TE 35 "
+TE 35 \
+Proxy-Connection 36 "
 
 #define HTTP_CONSTANT_RESPONSE_HEADERS_MAPPING " DATE 4 \
 CONTENT-TYPE 5 \
@@ -70,7 +71,8 @@ CONTENT-LOCATION 31 \
 CONTENT-MD5 32 \
 CONTENT-RANGE 33 \
 EXPIRES 34 \
-EXTENSION-HEADER 35 "
+EXTENSION-HEADER 35 \
+Proxy-Connection 36 "
 
 #define HTTP_MODE_SEND_REQUEST 0b001
 #define HTTP_MODE_READ_HEADERS 0b010
@@ -115,6 +117,7 @@ struct http_request {
 	char* proxy_authorization;
 	char* range;
 	char* te;
+	char* proxy_connection;
 	char ***custom_headers; /* custom[i][0]="Header" custom[i][1]="Value" custom[end]==NULL (NULL terminating) */
 	struct proxy_data* body;
 
@@ -161,6 +164,7 @@ struct http_response
 	char* content_range;
 	char* expires;
 	char* extension_header;
+	char* proxy_connection;
 	char ***custom_headers; /* custom[i][0]="Header" custom[i][1]="Value" custom[end]==NULL (NULL terminating) */
 	char* url;
 	struct proxy_data *body;
