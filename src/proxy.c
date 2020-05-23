@@ -29,7 +29,8 @@ struct proxy_options* create_proxy_options(struct proxy_options* px_opt)
 	if (px_opt == NULL)
 		return NULL;
 
-	struct proxy_options* dup_opt = (struct proxy_options*) calloc(1, sizeof(struct proxy_options));
+	struct proxy_options* dup_opt = (struct proxy_options*) calloc(1, \
+			sizeof(struct proxy_options));
 
 	if (dup_opt == NULL)
 		return NULL;
@@ -64,6 +65,18 @@ struct proxy_options* create_proxy_options(struct proxy_options* px_opt)
 			return NULL;
 	}
 
+	/* Redirection variables */
+
+	if (px_opt->nrd_ports > 0) {
+		dup_opt->nrd_ports = px_opt->nrd_ports;
+		dup_opt->rd_ports = (char**) malloc(sizeof(char*) * px_opt->nrd_ports);
+
+		for (long port_count = 0; port_count < px_opt->nrd_ports; port_count++) {
+			if (px_opt->rd_ports[port_count] != NULL)
+				dup_opt->rd_ports[port_count] = strdup(px_opt->rd_ports[port_count]);
+		}
+	}
+
 	/* Network Variables */
 
 	dup_opt->io_timeout = px_opt->io_timeout;
@@ -82,23 +95,36 @@ struct proxy_options* create_proxy_options(struct proxy_options* px_opt)
 	return dup_opt;
 }
 
-int free_proxy_options(struct proxy_options** px_opt)
+int free_proxy_options(struct proxy_options** _px_opt)
 {
-	if (px_opt == NULL || *px_opt == NULL)
+	if (_px_opt == NULL || *_px_opt == NULL)
 		return PROXY_ERROR_INVAL;
 
-	/* Free pointers */
+	struct proxy_options* px_opt = *_px_opt;
 
-	free((*px_opt)->px_server);
-	free((*px_opt)->px_port);
-	free((*px_opt)->px_username);
-	free((*px_opt)->px_password);
-	free((*px_opt)->sigmask);
+	/* Free double pointers */
+
+	if (px_opt->nrd_ports > 0) {
+		for (long port_count = 0; port_count < px_opt->nrd_ports; \
+		port_count++) {
+			free(px_opt->rd_ports[port_count]);
+		}
+
+		free(px_opt->rd_ports);
+	}
+
+	/* Free Pointers */
+
+	free(px_opt->px_server);
+	free(px_opt->px_port);
+	free(px_opt->px_username);
+	free(px_opt->px_password);
+	free(px_opt->sigmask);
 
 	/* Free px_opt{} */
 
-	free(*px_opt);
-	*px_opt = NULL;
+	free(px_opt);
+	*_px_opt = NULL;
 
 	return PROXY_ERROR_NONE;
 }
@@ -150,16 +176,13 @@ struct proxy_request* create_proxy_request(struct proxy_handler* px_handler, pro
 	/* Thread Variables */
 
 	px_request->ptid = pthread_self();
-	px_request->px_client = NULL;
 
 	/* Variables for Synchronization */
 
-	px_request->quit = 0;
 
 	/* Variables for socket operations */
 
 	px_request->sockfd = -1;
-	memset(&px_request->addr, 0, sizeof(struct sockaddr_storage));
 	px_request->addr_len = sizeof(struct sockaddr_storage);
 
 	/* Protocol specific data */

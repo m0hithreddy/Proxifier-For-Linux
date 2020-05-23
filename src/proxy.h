@@ -97,7 +97,7 @@ typedef int (*protocol_data_free) (void**);
 
 struct proxy_options* create_proxy_options(struct proxy_options* px_opt);
 
-int free_proxy_options(struct proxy_options** px_opt);
+int free_proxy_options(struct proxy_options** _px_opt);
 
 struct proxy_handler* create_proxy_handler();
 
