@@ -1,148 +1,449 @@
-#include"socket.h"
-#include<stdio.h> 
-#include<stdlib.h>
-#include<string.h>
-#include<netinet/in.h>
-#include<unistd.h>
-#include<sys/wait.h>
-#include<sys/types.h>
+/*
+ * proxy_http.c
+ *
+ *  Created on: 16-May-2020
+ *      Author: Mohith Reddy
+ */
 
-int main(int argc,char **argv)
+#include "proxy_http.h"
+#include "proxy.h"
+#include "proxy_structures.h"
+#include "proxy_socket.h"
+#include "proxy_functions.h"
+#include "http.h"
+#include "base64.h"
+#include "firewall.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <netdb.h>
+#include <pthread.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/signalfd.h>
+#include <sys/select.h>
+#include <linux/netfilter_ipv4.h>
+
+void* http_proxy_init(void* _px_handler)
 {
-	int sockfd,len,proxyserverport,connfd,spt;
-	char proxyserverip[20],pass64[200],rule[500],buffer[500],hostname[100],portstring[20];
-	struct sockaddr_in servaddr,cliaddr,hostaddr=createstructsockaddr_in(AF_INET,"127.0.0.1",55);
-	bzero(&proxyserverip,20);
-	bzero(&pass64,200);
-	sockfd=socket(AF_INET,SOCK_STREAM,0);
-	listen(sockfd,25);
-	len=sizeof(servaddr);
-	getsockname(sockfd,(struct sockaddr*)&servaddr,&len);
-	strcpy(proxyserverip,argv[1]);
-	proxyserverport=atoi(argv[2]);
-	if(strcmp(argv[3],"0")!=0)
-	{
-		strcpy(pass64,argv[3]);
+	/* Few variables initializations (used by init_quit) */
+
+	int sigfd = -1;
+	struct proxy_bag* request_bag = create_proxy_bag();
+
+	if (_px_handler == NULL)	// Invalid parameters
+		goto init_quit;
+
+	struct proxy_handler* px_handler = (struct proxy_handler*) _px_handler;
+
+	/* Setup a listening socket */
+
+	px_handler->pxl_server = ai_flags_create_proxy_client(PROXY_DEFAULT_SERVER_LISTENER, NULL, \
+			px_handler->px_opt, AI_PASSIVE);
+
+	if (init_proxy_client(px_handler->pxl_server) != PROXY_ERROR_NONE)
+		goto init_quit;
+
+	/* Setup system and protocol specific things */
+
+	if (px_handler->px_opt->px_username != NULL && px_handler->px_opt->px_password != NULL) {
+		/* Base64 encode username:password */
+
+		char* user_pass = strappend(3, px_handler->px_opt->px_username, ":", px_handler->px_opt->px_password);
+		char* user_pass64 = base64_encode(user_pass, strlen(user_pass), NULL);
+
+		px_handler->proto_data = (void*) strappend(3, PROXY_DEFAULT_HTTP_PROXY_AUTHORIZATION_SCHEME, \
+				" ", user_pass64);	// Proxy-Authorization header
 	}
-	sprintf(rule,"iptables -w -t nat -A OUTPUT -p tcp --tcp-flags ALL SYN ! -d %s --dport 80 -j LOG --log-prefix \"OUTPUT-PACKETS80: \" ",proxyserverip);
-	system(rule);
-	sprintf(rule,"iptables -w -t nat -A OUTPUT -p tcp ! -d %s --dport 80 -j DNAT --to-destination 127.0.0.1:%d",proxyserverip,ntohs(servaddr.sin_port));
-	system(rule);
-	len=sizeof(cliaddr);
-	for( ; ; )
-	{
-		connfd=accept(sockfd,(struct sockaddr*)&cliaddr,&len);
-		spt=ntohs(cliaddr.sin_port);
-		sprintf(portstring,"%d",spt);
-		strcpy(hostname,"dontknow");
-		if(fork()==0)
-		{
-			if(fork()==0)
-			{
-				fd_set listenset;
-				int proxysock=socket(AF_INET,SOCK_STREAM,0),n;
-				char serverdata[65535],clidata[65535],modclidata[65535];
-				struct sockaddr_in proxyservaddr;
-				bzero(&modclidata,65535);
-				bzero(&clidata,65535);
-				bzero(&serverdata,65535);
-				proxyservaddr=createstructsockaddr_in(AF_INET,proxyserverip,proxyserverport);
-				for(int i=1;i<=5;i++)
-				{
-					int hostsock=socket(AF_INET,SOCK_STREAM,0);
-					if(connect(hostsock,(struct sockaddr*)&hostaddr,sizeof(hostaddr))!=0)
-					{
-						close(hostsock);
-						sleep(1);
-						continue;
-					}
-					write(hostsock,portstring,strlen(portstring));
-					int n=read(hostsock,hostname,100);
-					if(n<=0)
-					{
-						close(hostsock);
-						sleep(1);
-						continue;
-					}
-					hostname[n]='\0';
-					if(strcmp(hostname,"dontknow")==0)
-					{
-						close(hostsock);
-						sleep(1);
-						continue;
-					}
-					close(hostsock);
+
+	/* Configure Firewall */
+
+	if (config_fwall(px_handler) != PROXY_ERROR_NONE)
+		goto init_quit;
+
+	/* Set the socket in non-blocking mode */
+
+	int sock_args = fcntl(px_handler->pxl_server->sockfd, F_GETFL);
+
+	if (sock_args < 0)
+		goto init_quit;
+
+	if (fcntl(px_handler->pxl_server->sockfd, F_SETFL, sock_args | O_NONBLOCK) < 0)
+		goto init_quit;
+
+	/* Select variables initializations */
+
+	fd_set rd_set, tr_set;
+	FD_ZERO(&rd_set);
+	FD_SET(px_handler->pxl_server->sockfd, &rd_set);
+
+	int maxfds = -1;
+
+	/* Setup signal handler */
+
+	struct signalfd_siginfo sigbuf;
+
+	if ((sigfd = signalfd(-1, px_handler->px_opt->sigmask, 0)) < 0)
+		goto init_quit;
+
+	FD_SET(sigfd, &rd_set);
+
+	maxfds = sigfd > px_handler->pxl_server->sockfd ? sigfd + 1 : px_handler->pxl_server->sockfd + 1;
+
+	/* Loop and accept connections */
+
+	int sl_status = 0;
+
+	for ( ; ; ) {
+
+		tr_set = rd_set;
+		sl_status = select(maxfds, &tr_set, NULL, NULL, NULL);
+
+		if (sl_status < 0) {
+			if (errno == EINTR)
+				continue;
+			else
+				goto init_quit;
+		}
+		else if (sl_status == 0)
+			continue;
+
+		if (FD_ISSET(sigfd, &tr_set)) {
+			read(sigfd, &sigbuf, sizeof(struct signalfd_siginfo));
+
+			if (px_handler->quit)
+				goto init_quit;
+
+			for (struct proxy_pocket* px_pocket = request_bag->start; px_pocket != NULL; \
+			px_pocket = px_pocket->next) {
+				if ((*((struct proxy_request**) px_pocket->data))->quit) {
+					pthread_join((*((struct proxy_request**) px_pocket->data))->tid, NULL);
+					free_proxy_request((struct proxy_request**) px_pocket->data, http_data_free);
+					delete_proxy_pocket(request_bag, &px_pocket);
 					break;
 				}
-				if(strcmp(hostname,"dontknow")==0)
-				{
-					close(connfd);
-					exit(0);
-				}
-				if(connect(proxysock,(struct sockaddr*)&proxyservaddr,sizeof(proxyservaddr))!=0)
-				{
-					exit(-1);
-				}
-				for( ; ; )
-				{
-					FD_ZERO(&listenset);
-					FD_SET(connfd,&listenset);
-					FD_SET(proxysock,&listenset);
-					select(max(connfd,proxysock)+1,&listenset,NULL,NULL,NULL);
-					if(FD_ISSET(connfd,&listenset))
-					{
-						bzero(&clidata,sizeof(clidata));
-						n=read(connfd,clidata,65535);
-						if(n<=0)
-						{
-							exit(0);
-						}
-						if(strncmp(clidata,"GET",3)==0)
-						{
-							strcat(modclidata,"GET http://");
-							strcat(modclidata,hostname);
-							strncat(modclidata,strstr(clidata," ")+1,strlen(strstr(clidata," ")+1)-strlen(strstr(clidata,"\r\n\r\n")));
-							strcat(modclidata,"\r\nProxy-Connection: keep-alive\r\n");
-							if(strlen(pass64)!=0)
-							{
-								strcat(modclidata,"Proxy-Authorization: Basic ");
-								strcat(modclidata,pass64);
-							}
-							strcat(modclidata,"\r\n\r\n");
-						}
-						else if(strncmp(clidata,"POST",4)==0)
-						{
-							strcat(modclidata,"POST http://");
-							strcat(modclidata,hostname);
-							char *last=strstr(clidata,"\r\n\r\n");
-							strncat(modclidata,strstr(clidata," ")+1,strlen(strstr(clidata," ")+1)-strlen(last));
-							strcat(modclidata,"\r\nProxy-Connection: keep-alive");
-							if(strlen(pass64)!=0)
-							{
-								strcat(modclidata,"\r\nProxy-Authorization: Basic ");
-								strcat(modclidata,pass64);
-							}
-							strcat(modclidata,last);
-						}
-						write(proxysock,modclidata,strlen(modclidata));
-					}
-					else if(FD_ISSET(proxysock,&listenset))
-					{
-						bzero(&serverdata,sizeof(serverdata));
-						n=read(proxysock,serverdata,65535);
-						if(n<=0)
-						{
-							exit(0);
-						}
-						write(connfd,serverdata,n);
-					}
-				}
-				exit(0);
 			}
-			exit(0);
 		}
-		wait(NULL);
-		close(connfd);
+		else if (FD_ISSET(px_handler->pxl_server->sockfd, &tr_set)) {
+			/* Accept incoming connections */
+
+			struct proxy_request* px_request = create_proxy_request(px_handler, http_data_setup);
+
+			if (px_request == NULL)
+				goto init_quit;
+
+			px_request->sockfd = accept(px_handler->pxl_server->sockfd, (struct sockaddr*) &(px_request->addr), \
+					&(px_request->addr_len));
+
+			if (px_request->sockfd < 0) {
+				free_proxy_request(&px_request, http_data_free);
+
+				if (errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)
+					continue;
+				else
+					goto init_quit;
+			}
+
+			/* Create a proxy_client{} for already accepted client connection for socket operations */
+
+			px_request->px_client = ai_flags_sockfd_create_proxy_client(NULL, NULL, px_request->px_opt, \
+					-1, px_request->sockfd);
+
+			if (px_request->px_client == NULL) {
+				goto init_quit;
+			}
+
+			/* Create thread for handling client */
+
+			if (pthread_create(&(px_request->tid), NULL, http_proxy_handler, (void*) px_request) != 0) {
+				close(px_request->sockfd);
+				free_proxy_request(&px_request, http_data_free);
+
+				continue;
+			}
+
+			place_proxy_data(request_bag, &((struct proxy_data) {(void*) &px_request, \
+				sizeof(struct proxy_request*)}));
+		}
+		else
+			goto init_quit;
 	}
-	return 0;
+
+	init_quit:
+	/* Deconfig firewall rules */
+
+	deconfig_fwall(px_handler);
+
+	/* Stop accepting connections */
+
+	free_proxy_client(&px_handler->pxl_server);
+
+	/* Close signalfd socket */
+
+	if (sigfd >= 0)	{
+		close(sigfd);
+		sigfd = -1;
+	}
+
+	/* Terminate all handlers */
+
+	for (struct proxy_pocket* px_pocket = request_bag->start; px_pocket != NULL; \
+	px_pocket = px_pocket->next) {
+		/* Signal the http_handlers for termination */
+
+		(*((struct proxy_request**) px_pocket->data))->quit = 1;
+		pthread_kill((*((struct proxy_request**) px_pocket->data))->tid, \
+				(*((struct proxy_request**) px_pocket->data))->px_opt->signo);
+	}
+
+	for (struct proxy_pocket* px_pocket = request_bag->start; px_pocket != NULL; \
+	px_pocket = px_pocket->next) {
+		/* Wait for threads to join */
+		pthread_join((*((struct proxy_request**) px_pocket->data))->tid, NULL);
+
+		/* Free structures */
+		free_proxy_request((struct proxy_request**) px_pocket->data, http_data_free);
+	}
+
+	free_proxy_bag(&request_bag);
+
+	/* Signal parent if it did'nt request for termination */
+
+	if (!px_handler->quit) {
+		px_handler->quit = 1;
+		pthread_kill(px_handler->ptid, px_handler->px_opt->signo);
+	}
+
+	return NULL;
 }
+
+void* http_proxy_handler(void* _px_request)
+{
+	struct proxy_request* px_request = (struct proxy_request*) _px_request;
+	struct proxy_client *px_server = NULL;
+	int sigfd = -1;
+
+	if (px_request == NULL)
+		goto handler_quit;
+
+	/* Set up a connection with proxy_server */
+
+	px_server = create_proxy_client(px_request->px_opt->px_server, px_request->px_opt->px_port, \
+			px_request->px_opt);
+
+	if (init_proxy_client(px_server) != PROXY_ERROR_NONE)
+		goto handler_quit;
+
+	/* Get the original destination sockaddr_storage{} */
+
+	struct sockaddr_storage org_addr;
+	int org_addrlen = sizeof(struct sockaddr_storage);
+
+	if (getsockopt(px_request->px_client->sockfd, SOL_IP, SO_ORIGINAL_DST, (void*) &org_addr, \
+			&org_addrlen) != 0) {
+		goto handler_quit;
+	}
+
+	/* Get the original destination IP */
+
+	char* org_dst = (char*) malloc(sizeof(char) * (org_addr.ss_family == AF_INET ? \
+			INET_ADDRSTRLEN : INET6_ADDRSTRLEN));
+
+	if (org_addr.ss_family == AF_INET) {
+		org_dst = (char*) malloc(sizeof(char) * INET_ADDRSTRLEN);
+		inet_ntop(AF_INET, (void*) (&((struct sockaddr_in*) &org_addr)->sin_addr), org_dst, \
+				INET_ADDRSTRLEN);
+	}
+	else if (org_addr.ss_family == AF_INET6) {
+		org_dst = (char*) malloc(sizeof(char) * INET6_ADDRSTRLEN);
+		inet_ntop(AF_INET6, (void*) (&((struct sockaddr_in6*) &org_addr)->sin6_addr), org_dst, \
+				INET6_ADDRSTRLEN);
+	}
+
+	/* Get the original destination port */
+
+	char* org_port = (char*) malloc(6 * sizeof(char));
+
+	snprintf(org_port, 6, "%d", htons(org_addr.ss_family == AF_INET ? \
+			((struct sockaddr_in*) &org_addr)->sin_port : ((struct sockaddr_in6*) &org_addr)->sin6_port));
+
+	/* Create HTTP request */
+
+	struct http_request s_request;
+	memset(&s_request, 0, sizeof(struct http_request));
+
+	s_request.method = "CONNECT";
+	s_request.path = strappend(3, org_dst, ":", org_port);
+	s_request.version = "1.1";
+	s_request.host = strdup(org_dst);
+	s_request.user_agent = PROXY_DEFAULT_HTTP_USER_AGENT;
+
+	if (px_request->proto_data != NULL) {
+		s_request.proxy_authorization = strdup((char*) px_request->proto_data);
+	}
+
+	s_request.proxy_connection = "Keep-Alive";
+
+	struct proxy_data* request = create_http_request(&s_request);
+
+	/* Send HTTP request and Read headers */
+
+	struct proxy_bag* http_results = create_proxy_bag();
+
+	if (http_method(px_server, request, HTTP_MODE_SEND_REQUEST | HTTP_MODE_READ_HEADERS, http_results) \
+			!= PROXY_ERROR_NONE) {
+		goto handler_quit;
+	}
+
+	struct http_response* s_response = parse_http_response((struct proxy_data*) http_results->start->data);
+
+	/* Check if CONNECT succeeded */
+
+	if (s_response == NULL || s_response->status_code == NULL || \
+			strcmp(s_response->status_code, "200") != 0) {
+		goto handler_quit;
+	}
+
+	/* Timeout initializations */
+
+	struct timeval *rd_timeo = NULL, tp_timeo;
+
+	if (px_request->px_opt->io_timeout > 0) {
+		rd_timeo = (struct timeval*) malloc(sizeof(struct timeval));
+		rd_timeo->tv_sec = px_request->px_opt->io_timeout;
+		rd_timeo->tv_usec = 0;
+	}
+	else
+		rd_timeo = NULL;
+
+	/* Select variables initializations */
+
+	fd_set rd_set, tr_set;
+	FD_ZERO(&rd_set);
+	FD_SET(px_request->px_client->sockfd, &rd_set);
+	FD_SET(px_server->sockfd, &rd_set);
+
+	int maxfds = px_request->px_client->sockfd > px_server->sockfd ? px_request->px_client->sockfd + 1 : px_server->sockfd + 1;
+
+	/* Signalfd initializations */
+
+	sigfd = signalfd(-1, px_request->px_opt->sigmask, 0);
+
+	if (sigfd < 0)
+		goto handler_quit;
+
+	struct signalfd_siginfo sigbuf;
+
+	FD_SET(sigfd, &rd_set);
+	maxfds = sigfd + 1 > maxfds ? sigfd + 1 : maxfds;
+
+	/* Tunnel data between client and proxy server */
+
+	struct proxy_data* tun_data = create_proxy_data(PROXY_MAX_TRANSACTION_SIZE);
+	long rd_status = 0, rd_return = PROXY_ERROR_NONE;
+
+	for ( ; ; ) {
+		tr_set = rd_set;
+
+		if (select(maxfds, &tr_set, NULL, NULL, rd_timeo != NULL ? \
+				tp_timeo = *rd_timeo, &tp_timeo : NULL) < 0) {
+			goto handler_quit;
+		}
+
+		if (FD_ISSET(sigfd, &tr_set)) {
+			read(sigfd, &sigbuf, sizeof(struct signalfd_siginfo));
+			goto handler_quit;
+		}
+		else if (FD_ISSET(px_request->px_client->sockfd, &tr_set)) {
+			rd_status = 0;
+			tun_data->size = PROXY_MAX_TRANSACTION_SIZE;
+			rd_return = proxy_socket_read(px_request->px_client, tun_data, PROXY_MODE_PARTIAL, &rd_status);
+
+			if (rd_return != PROXY_ERROR_NONE && rd_return != PROXY_ERROR_RETRY \
+					&& rd_return != PROXY_ERROR_BUFFER_FULL){
+				goto handler_quit;
+			}
+
+			if (rd_status > 0) {
+				tun_data->size = rd_status;
+
+				if (proxy_socket_write(px_server, tun_data, PROXY_MODE_AUTO_RETRY, \
+						NULL) != PROXY_ERROR_NONE) {
+					goto handler_quit;
+				}
+			}
+
+			if (rd_return == PROXY_ERROR_NONE)
+				goto handler_quit;
+		}
+		else if (FD_ISSET(px_server->sockfd, &tr_set)) {
+			rd_status = 0;
+			tun_data->size = PROXY_MAX_TRANSACTION_SIZE;
+			rd_return = proxy_socket_read(px_server, tun_data, PROXY_MODE_PARTIAL, &rd_status);
+
+			if (rd_return != PROXY_ERROR_NONE && rd_return != PROXY_ERROR_RETRY \
+					&& rd_return != PROXY_ERROR_BUFFER_FULL){
+				goto handler_quit;
+			}
+
+			if (rd_status > 0) {
+				tun_data->size = rd_status;
+
+				if (proxy_socket_write(px_request->px_client, tun_data, PROXY_MODE_AUTO_RETRY, \
+						NULL) != PROXY_ERROR_NONE) {
+					goto handler_quit;
+				}
+			}
+
+			if (rd_return == PROXY_ERROR_NONE)
+				goto handler_quit;
+		}
+		else
+			goto handler_quit;
+	}
+
+	handler_quit:
+	free_proxy_client(&px_server);
+
+	if (sigfd >= 0) {
+		close(sigfd);
+		sigfd = -1;
+	}
+
+	if (!px_request->quit) {
+		px_request->quit = 1;
+		pthread_kill(px_request->ptid, px_request->px_opt->signo);
+	}
+
+	return NULL;
+}
+
+int http_data_setup(struct proxy_handler* px_handler, void** _http_data)
+{
+	if (px_handler == NULL || _http_data == NULL)
+		return PROXY_ERROR_INVAL;
+
+	if (px_handler->proto_data != NULL) {
+		*_http_data = strdup((char*) px_handler->proto_data);
+
+		if (*_http_data == NULL)
+			return PROXY_ERROR_INVAL;
+	}
+
+	return PROXY_ERROR_NONE;
+}
+
+int http_data_free(void** _http_data)
+{
+	if (_http_data == NULL || *_http_data == NULL)
+		return PROXY_ERROR_INVAL;
+
+	free(*_http_data);
+	*_http_data = NULL;
+
+	return PROXY_ERROR_NONE;
+}
+
