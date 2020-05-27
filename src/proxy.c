@@ -14,6 +14,7 @@
 #include <netinet/in.h>
 #include <signal.h>
 #include <pthread.h>
+#include <stdio.h>
 
 struct in_addr* get_lo_interface_in_addr()
 {
@@ -107,7 +108,7 @@ int free_proxy_options(struct proxy_options** _px_opt)
 	if (px_opt->nrd_ports > 0) {
 		for (long port_count = 0; port_count < px_opt->nrd_ports; \
 		port_count++) {
-			free(px_opt->rd_ports[port_count]);
+			free((px_opt->rd_ports)[port_count]);
 		}
 
 		free(px_opt->rd_ports);
@@ -135,14 +136,14 @@ struct proxy_handler* create_proxy_handler()
 
 	px_handler->px_opt = (struct proxy_options*) calloc(1, sizeof(struct proxy_options));
 
-	px_handler->px_opt->px_server = "192.168.43.231";
-	px_handler->px_opt->px_port = "3128";
+	px_handler->px_opt->px_server = strdup("192.168.43.49");
+	px_handler->px_opt->px_port = strdup("3128");
 	px_handler->px_opt->px_username = NULL;
 	px_handler->px_opt->px_password = NULL;
 	px_handler->px_opt->nrd_ports = 2;
 	px_handler->px_opt->rd_ports = malloc(sizeof(char*) * px_handler->px_opt->nrd_ports);
-	px_handler->px_opt->rd_ports[0] = "80";
-	px_handler->px_opt->rd_ports[1] = "443";
+	px_handler->px_opt->rd_ports[0] = strdup("80");
+	px_handler->px_opt->rd_ports[1] = strdup("443");
 	/* Network-Variables */
 	px_handler->px_opt->io_timeout = 60;
 	/* Signal Variables */
@@ -155,6 +156,43 @@ struct proxy_handler* create_proxy_handler()
 	px_handler->proto_data = NULL;
 
 	return px_handler;
+}
+
+int free_proxy_handler(struct proxy_handler** _px_handler)
+{
+	if (_px_handler == NULL || *_px_handler == NULL)
+		return PROXY_ERROR_INVAL;
+
+	struct proxy_handler* px_handler = *_px_handler;
+
+	int return_status = PROXY_ERROR_NONE;
+
+	/* Free Proxy Options */
+
+	if (px_handler->px_opt != NULL) {
+		if (free_proxy_options(&px_handler->px_opt) != PROXY_ERROR_NONE)
+			return_status = PROXY_ERROR_INVAL;
+	}
+
+	/* Thread variables */
+
+	if (px_handler->pxl_server != NULL) {
+		if (free_proxy_client(&px_handler->pxl_server) != PROXY_ERROR_NONE)
+			return_status = PROXY_ERROR_INVAL;
+	}
+
+	/* Protocol specific data */
+
+	if (px_handler->proto_data != NULL) {
+		free(px_handler->proto_data);
+	}
+
+	/* Free px_handler{} */
+
+	free(px_handler);
+	_px_handler = NULL;
+
+	return return_status;
 }
 
 struct proxy_request* create_proxy_request(struct proxy_handler* px_handler, protocol_data_setup proto_data_setup)

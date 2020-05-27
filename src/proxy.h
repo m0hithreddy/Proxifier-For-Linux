@@ -101,6 +101,8 @@ int free_proxy_options(struct proxy_options** _px_opt);
 
 struct proxy_handler* create_proxy_handler();
 
+int free_proxy_handler(struct proxy_handler** _px_handler);
+
 struct proxy_request* create_proxy_request(struct proxy_handler* px_handler, protocol_data_setup proto_data_setup);
 
 int free_proxy_request(struct proxy_request** px_request, protocol_data_free proto_data_free);
