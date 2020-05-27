@@ -13,3 +13,5 @@
 .cproject
 .project
 .settings/
+*.service
+proxifier
