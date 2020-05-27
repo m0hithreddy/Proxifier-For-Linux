@@ -12,7 +12,7 @@
 #define FIREWALL_CONSTANT_NAT_TABLE "--table", "nat"
 #define FIREWALL_CONSTANT_INSERT_AT_TOP "--insert", "OUTPUT", "1"
 #define FIREWALL_CONSTANT_INSERT_AT_BOTTOM "--append", "OUTPUT"
-#define FIREWALL_CONSTANT_DELETE "--delete"
+#define FIREWALL_CONSTANT_DELETE "--delete", "OUTPUT"
 #define FIREWALL_CONSTANT_TCP_PROTOCOL "--protocol", "tcp"
 #define FIREWALL_CONSTANT_DESTINATION_ADRESS_OPTION "--destination"
 #define FIREWALL_CONSTANT_DESTINATION_PORTS_OPTION "--match", "multiport", "--destination-ports"
