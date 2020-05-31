@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -100,13 +101,15 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(sysconfdir)" \
+	"$(DESTDIR)$(systemdsysdir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_proxifier_OBJECTS = src/proxifier.$(OBJEXT) \
-	src/proxy_http.$(OBJEXT) src/proxy_https.$(OBJEXT) \
-	src/proxy_dns.$(OBJEXT) src/logger.$(OBJEXT) \
-	src/proxy.$(OBJEXT) src/socket.$(OBJEXT) src/base64.$(OBJEXT)
+am_proxifier_OBJECTS = src/proxifier.$(OBJEXT) src/proxy.$(OBJEXT) \
+	src/proxy_http.$(OBJEXT) src/proxy_socket.$(OBJEXT) \
+	src/proxy_structures.$(OBJEXT) src/proxy_functions.$(OBJEXT) \
+	src/proxy_configuration.$(OBJEXT) src/http.$(OBJEXT) \
+	src/base64.$(OBJEXT) src/firewall.$(OBJEXT)
 proxifier_OBJECTS = $(am_proxifier_OBJECTS)
 proxifier_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -124,10 +127,13 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = src/$(DEPDIR)/base64.Po src/$(DEPDIR)/logger.Po \
+am__depfiles_remade = src/$(DEPDIR)/base64.Po \
+	src/$(DEPDIR)/firewall.Po src/$(DEPDIR)/http.Po \
 	src/$(DEPDIR)/proxifier.Po src/$(DEPDIR)/proxy.Po \
-	src/$(DEPDIR)/proxy_dns.Po src/$(DEPDIR)/proxy_http.Po \
-	src/$(DEPDIR)/proxy_https.Po src/$(DEPDIR)/socket.Po
+	src/$(DEPDIR)/proxy_configuration.Po \
+	src/$(DEPDIR)/proxy_functions.Po src/$(DEPDIR)/proxy_http.Po \
+	src/$(DEPDIR)/proxy_socket.Po \
+	src/$(DEPDIR)/proxy_structures.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -148,6 +154,34 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+am__uninstall_files_from_dir = { \
+  test -z "$$files" \
+    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
+    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+         $(am__cd) "$$dir" && rm -f $$files; }; \
+  }
+DATA = $(sysconf_DATA) $(systemdsys_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \
 	$(LISP)config.h.in
 # Read a list of newline-separated strings from the standard input,
@@ -171,7 +205,8 @@ CTAGS = ctags
 CSCOPE = cscope
 AM_RECURSIVE_TARGETS = cscope
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(srcdir)/src/Makefile.am $(top_srcdir)/build-aux/compile \
+	$(srcdir)/service/Makefile.am $(srcdir)/src/Makefile.am \
+	$(top_srcdir)/build-aux/compile \
 	$(top_srcdir)/build-aux/depcomp \
 	$(top_srcdir)/build-aux/install-sh \
 	$(top_srcdir)/build-aux/missing COPYING INSTALL \
@@ -235,6 +270,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -283,29 +319,47 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = -Wall -Werror foreign
+EXTRA_DIST = \
+			Authors.md \
+			ChangeLog.md \
+			proxifier.conf \
+			README.md
+
 proxifier_SOURCES = \
 src/proxifier.c \
-src/proxy_http.c \
-src/proxy_https.c \
-src/proxy_dns.c \
-src/logger.c \
+src/proxifier.h \
 src/proxy.c \
 src/proxy.h \
-src/socket.c \
-src/socket.h \
+src/proxy_http.c \
+src/proxy_http.h \
+src/proxy_socket.c \
+src/proxy_socket.h \
+src/proxy_structures.c \
+src/proxy_structures.h \
+src/proxy_functions.c \
+src/proxy_functions.h \
+src/proxy_configuration.c \
+src/proxy_configuration.h \
+src/http.c \
+src/http.h \
 src/base64.c \
 src/base64.h \
+src/firewall.c \
+src/firewall.h \
 config.h
 
 AM_CFLAGS = -I$(abs_srcdir)/src -I$(abs_srcdir)
+systemdsysdir = $(libdir)/systemd/system
+systemdsys_DATA = service/proxifier.service
+sysconf_DATA = proxifier.conf 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .o .obj
+.SUFFIXES: ._service .c .o .obj .service
 am--refresh: Makefile
 	@:
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(srcdir)/src/Makefile.am $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(srcdir)/src/Makefile.am $(srcdir)/service/Makefile.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -327,7 +381,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__maybe_remake_depfiles)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__maybe_remake_depfiles);; \
 	esac;
-$(srcdir)/src/Makefile.am $(am__empty):
+$(srcdir)/src/Makefile.am $(srcdir)/service/Makefile.am $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
@@ -402,18 +456,21 @@ src/$(DEPDIR)/$(am__dirstamp):
 	@: > src/$(DEPDIR)/$(am__dirstamp)
 src/proxifier.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/proxy.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/proxy_http.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
-src/proxy_https.$(OBJEXT): src/$(am__dirstamp) \
+src/proxy_socket.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
-src/proxy_dns.$(OBJEXT): src/$(am__dirstamp) \
+src/proxy_structures.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
-src/logger.$(OBJEXT): src/$(am__dirstamp) \
+src/proxy_functions.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
-src/proxy.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
-src/socket.$(OBJEXT): src/$(am__dirstamp) \
+src/proxy_configuration.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/http.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/base64.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/firewall.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 
 proxifier$(EXEEXT): $(proxifier_OBJECTS) $(proxifier_DEPENDENCIES) $(EXTRA_proxifier_DEPENDENCIES) 
@@ -428,13 +485,15 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/base64.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/logger.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/firewall.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/http.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxifier.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_dns.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_configuration.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_functions.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_http.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_https.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/socket.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_socket.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_structures.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -457,6 +516,48 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+install-sysconfDATA: $(sysconf_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(sysconf_DATA)'; test -n "$(sysconfdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(sysconfdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(sysconfdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(sysconfdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(sysconfdir)" || exit $$?; \
+	done
+
+uninstall-sysconfDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(sysconf_DATA)'; test -n "$(sysconfdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(sysconfdir)'; $(am__uninstall_files_from_dir)
+install-systemdsysDATA: $(systemdsys_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(systemdsys_DATA)'; test -n "$(systemdsysdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(systemdsysdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(systemdsysdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(systemdsysdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(systemdsysdir)" || exit $$?; \
+	done
+
+uninstall-systemdsysDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(systemdsys_DATA)'; test -n "$(systemdsysdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(systemdsysdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -685,9 +786,9 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS) config.h
+all-am: Makefile $(PROGRAMS) $(DATA) config.h
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(sysconfdir)" "$(DESTDIR)$(systemdsysdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -724,18 +825,20 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-local mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 		-rm -f src/$(DEPDIR)/base64.Po
-	-rm -f src/$(DEPDIR)/logger.Po
+	-rm -f src/$(DEPDIR)/firewall.Po
+	-rm -f src/$(DEPDIR)/http.Po
 	-rm -f src/$(DEPDIR)/proxifier.Po
 	-rm -f src/$(DEPDIR)/proxy.Po
-	-rm -f src/$(DEPDIR)/proxy_dns.Po
+	-rm -f src/$(DEPDIR)/proxy_configuration.Po
+	-rm -f src/$(DEPDIR)/proxy_functions.Po
 	-rm -f src/$(DEPDIR)/proxy_http.Po
-	-rm -f src/$(DEPDIR)/proxy_https.Po
-	-rm -f src/$(DEPDIR)/socket.Po
+	-rm -f src/$(DEPDIR)/proxy_socket.Po
+	-rm -f src/$(DEPDIR)/proxy_structures.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-local distclean-tags
@@ -752,13 +855,13 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-systemdsysDATA
 
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-binPROGRAMS
+install-exec-am: install-binPROGRAMS install-sysconfDATA
 
 install-html: install-html-am
 
@@ -784,13 +887,15 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
 		-rm -f src/$(DEPDIR)/base64.Po
-	-rm -f src/$(DEPDIR)/logger.Po
+	-rm -f src/$(DEPDIR)/firewall.Po
+	-rm -f src/$(DEPDIR)/http.Po
 	-rm -f src/$(DEPDIR)/proxifier.Po
 	-rm -f src/$(DEPDIR)/proxy.Po
-	-rm -f src/$(DEPDIR)/proxy_dns.Po
+	-rm -f src/$(DEPDIR)/proxy_configuration.Po
+	-rm -f src/$(DEPDIR)/proxy_functions.Po
 	-rm -f src/$(DEPDIR)/proxy_http.Po
-	-rm -f src/$(DEPDIR)/proxy_https.Po
-	-rm -f src/$(DEPDIR)/socket.Po
+	-rm -f src/$(DEPDIR)/proxy_socket.Po
+	-rm -f src/$(DEPDIR)/proxy_structures.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -806,26 +911,29 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS
+uninstall-am: uninstall-binPROGRAMS uninstall-sysconfDATA \
+	uninstall-systemdsysDATA
 
 .MAKE: all install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles am--refresh check \
 	check-am clean clean-binPROGRAMS clean-cscope clean-generic \
-	cscope cscopelist-am ctags ctags-am dist dist-all dist-bzip2 \
-	dist-gzip dist-lzip dist-shar dist-tarZ dist-xz dist-zip \
-	distcheck distclean distclean-compile distclean-generic \
-	distclean-hdr distclean-local distclean-tags distcleancheck \
-	distdir distuninstallcheck dvi dvi-am html html-am info \
-	info-am install install-am install-binPROGRAMS install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
+	clean-local cscope cscopelist-am ctags ctags-am dist dist-all \
+	dist-bzip2 dist-gzip dist-lzip dist-shar dist-tarZ dist-xz \
+	dist-zip distcheck distclean distclean-compile \
+	distclean-generic distclean-hdr distclean-local distclean-tags \
+	distcleancheck distdir distuninstallcheck dvi dvi-am html \
+	html-am info info-am install install-am install-binPROGRAMS \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	install-sysconfDATA install-systemdsysDATA installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-binPROGRAMS
+	uninstall-am uninstall-binPROGRAMS uninstall-sysconfDATA \
+	uninstall-systemdsysDATA
 
 .PRECIOUS: Makefile
 
@@ -834,6 +942,14 @@ distclean-local:
 	rm -rf  *.m4
 	rm -rf *.in~
 	rm -rf autom4te.cache
+
+re-install: uninstall install
+
+clean-local:
+	rm -f service/*.service
+
+._service.service:
+	$(SED) "s|BINDIR|$(DESTDIR)$(bindir)|g" $< > $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
