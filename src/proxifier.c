@@ -9,6 +9,7 @@
 #include "proxy.h"
 #include "proxy_http.h"
 #include "proxy_structures.h"
+#include "proxy_configuration.h"
 #include <signal.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -31,17 +32,32 @@ int main(int argc, char** argv)
 
 	int exit_status = 0;
 
-	/* Install Proxy Handlers */
+	/* Read the config_file and get proxy_handler{} */
 
 	struct proxy_bag* handlers_bag = create_proxy_bag();
 
-	struct proxy_handler* px_handler = create_proxy_handler();
-	px_handler->ptid = pthread_self();
+	if (get_proxy_handlers(PROXY_DEFAULT_CONFIG_FILE, handlers_bag) != PROXY_ERROR_NONE || \
+			handlers_bag->n_pockets <= 0) {
+		goto proxifier_quit;
+	}
 
-	place_proxy_data(handlers_bag, &((struct proxy_data) {(void*) &px_handler, \
-		sizeof(struct proxy_handler*)}));
+	for (struct proxy_pocket* px_pocket = handlers_bag->start; px_pocket != NULL; ) {
 
-	pthread_create(&px_handler->tid, NULL, http_proxy_init, (void*) px_handler);
+		struct proxy_handler* px_handler = (struct proxy_handler*) px_pocket->data;
+
+		if (px_handler->protocol == PROXY_PROTOCOL_HTTP) {
+			pthread_create(&px_handler->tid, NULL, http_proxy_init, px_handler);
+			px_pocket = px_pocket->next;
+		}
+		else {
+			struct proxy_pocket* tmp_pocket = px_pocket->next;
+			delete_proxy_pocket(handlers_bag, &px_pocket);
+			px_pocket = tmp_pocket;
+		}
+	}
+
+	if (handlers_bag->n_pockets <= 0)
+		goto proxifier_quit;
 
 	/* Make a signal mask on which main should be listening */
 
@@ -71,7 +87,7 @@ int main(int argc, char** argv)
 
 	for (struct proxy_pocket* px_pocket = handlers_bag->start; \
 	px_pocket != NULL; px_pocket = px_pocket->next) {
-		px_handler = *((struct proxy_handler**) px_pocket->data);
+		struct proxy_handler* px_handler = (struct proxy_handler*) px_pocket->data;
 
 		px_handler->quit = 1;
 		pthread_kill(px_handler->tid, SIGRTMIN);
@@ -79,10 +95,10 @@ int main(int argc, char** argv)
 
 	for (struct proxy_pocket* px_pocket = handlers_bag->start; \
 	px_pocket != NULL; px_pocket = px_pocket->next) {
-		px_handler = *((struct proxy_handler**) px_pocket->data);
+		struct proxy_handler* px_handler = (struct proxy_handler*) px_pocket->data;
 
 		pthread_join(px_handler->tid, NULL);
-		free_proxy_handler((struct proxy_handler**) px_pocket->data);
+		free_proxy_handler((struct proxy_handler**) &px_pocket->data);
 	}
 
 	free_proxy_bag(&handlers_bag);
