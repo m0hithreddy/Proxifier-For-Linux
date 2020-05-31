@@ -211,6 +211,7 @@ int free_proxy_client(struct proxy_client** px_client)
 	/* Free structure */
 
 	free(*px_client);
+	*px_client = NULL;
 
 	return return_status;
 }
