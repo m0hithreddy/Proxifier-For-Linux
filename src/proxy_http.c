@@ -47,18 +47,6 @@ void* http_proxy_init(void* _px_handler)
 	if (init_proxy_client(px_handler->pxl_server) != PROXY_ERROR_NONE)
 		goto init_quit;
 
-	/* Setup system and protocol specific things */
-
-	if (px_handler->px_opt->px_username != NULL && px_handler->px_opt->px_password != NULL) {
-		/* Base64 encode username:password */
-
-		char* user_pass = strappend(3, px_handler->px_opt->px_username, ":", px_handler->px_opt->px_password);
-		char* user_pass64 = base64_encode(user_pass, strlen(user_pass), NULL);
-
-		px_handler->proto_data = (void*) strappend(3, PROXY_DEFAULT_HTTP_PROXY_AUTHORIZATION_SCHEME, \
-				" ", user_pass64);	// Proxy-Authorization header
-	}
-
 	/* Configure Firewall */
 
 	if (config_fwall(px_handler) != PROXY_ERROR_NONE)
@@ -121,7 +109,7 @@ void* http_proxy_init(void* _px_handler)
 			px_pocket = px_pocket->next) {
 				if ((*((struct proxy_request**) px_pocket->data))->quit) {
 					pthread_join((*((struct proxy_request**) px_pocket->data))->tid, NULL);
-					free_proxy_request((struct proxy_request**) px_pocket->data, http_data_free);
+					free_proxy_request((struct proxy_request**) px_pocket->data);
 					delete_proxy_pocket(request_bag, &px_pocket);
 					break;
 				}
@@ -130,7 +118,7 @@ void* http_proxy_init(void* _px_handler)
 		else if (FD_ISSET(px_handler->pxl_server->sockfd, &tr_set)) {
 			/* Accept incoming connections */
 
-			struct proxy_request* px_request = create_proxy_request(px_handler, http_data_setup);
+			struct proxy_request* px_request = create_proxy_request(px_handler);
 
 			if (px_request == NULL)
 				goto init_quit;
@@ -139,7 +127,7 @@ void* http_proxy_init(void* _px_handler)
 					&(px_request->addr_len));
 
 			if (px_request->sockfd < 0) {
-				free_proxy_request(&px_request, http_data_free);
+				free_proxy_request(&px_request);
 
 				if (errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)
 					continue;
@@ -160,7 +148,7 @@ void* http_proxy_init(void* _px_handler)
 
 			if (pthread_create(&(px_request->tid), NULL, http_proxy_handler, (void*) px_request) != 0) {
 				close(px_request->sockfd);
-				free_proxy_request(&px_request, http_data_free);
+				free_proxy_request(&px_request);
 
 				continue;
 			}
@@ -205,7 +193,7 @@ void* http_proxy_init(void* _px_handler)
 		pthread_join((*((struct proxy_request**) px_pocket->data))->tid, NULL);
 
 		/* Free structures */
-		free_proxy_request((struct proxy_request**) px_pocket->data, http_data_free);
+		free_proxy_request((struct proxy_request**) px_pocket->data);
 	}
 
 	free_proxy_bag(&request_bag);
@@ -228,6 +216,10 @@ void* http_proxy_handler(void* _px_request)
 
 	if (px_request == NULL)
 		goto handler_quit;
+
+	/* Retrieve the http_data{} from proxy_request{} */
+
+	struct http_data* htp_data = (struct http_data*) px_request->proto_data;
 
 	/* Set up a connection with proxy_server */
 
@@ -281,8 +273,8 @@ void* http_proxy_handler(void* _px_request)
 	s_request.host = strdup(org_dst);
 	s_request.user_agent = PROXY_DEFAULT_HTTP_USER_AGENT;
 
-	if (px_request->proto_data != NULL) {
-		s_request.proxy_authorization = strdup((char*) px_request->proto_data);
+	if (htp_data != NULL && htp_data->authpass != NULL) {
+		s_request.proxy_authorization = strdup(htp_data->authpass);
 	}
 
 	s_request.proxy_connection = "Keep-Alive";
@@ -421,28 +413,178 @@ void* http_proxy_handler(void* _px_request)
 	return NULL;
 }
 
-int http_data_setup(struct proxy_handler* px_handler, void** _http_data)
+int fill_http_proxy_handler(char* conf_key, char* conf_value, struct proxy_handler* px_handler)
 {
-	if (px_handler == NULL || _http_data == NULL)
+	if (conf_key == NULL || conf_value == NULL || px_handler == NULL || (px_handler->proto_data != NULL \
+			&& ((struct http_data*) px_handler->proto_data)->protocol != PROXY_PROTOCOL_HTTP)) {
+		return PROXY_ERROR_INVAL;
+	}
+
+	/* Initialize px_handler->proto_data */
+
+	if (px_handler->proto_data == NULL) {
+		px_handler->proto_data = calloc(1, sizeof(struct http_data));
+		((struct http_data*) px_handler->proto_data)->protocol = PROXY_PROTOCOL_HTTP;
+	}
+
+	struct http_data* htp_data = (struct http_data*) px_handler->proto_data;
+
+	if (strcasecmp(conf_key, "http_proxy_method_get") == 0 || strcasecmp(conf_key, "http_proxy_method_connect") == 0) {
+
+		struct proxy_data* value_data = (struct proxy_data*) malloc(sizeof(struct proxy_data));
+		value_data->data = conf_value;
+		value_data->size = strlen(conf_value);
+
+		/* Seek through spaces and commas */
+
+		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT);
+
+		if (value_data == NULL || value_data->data == NULL || value_data->size <= 0)
+			return PROXY_ERROR_NONE;
+
+		/* Loop and read the ports */
+
+		struct proxy_bag* ports_bag = create_proxy_bag();
+		char* port = NULL;
+
+		for ( ; ; ) {
+
+			port = NULL;
+			value_data = scopy(value_data, " ,", &port, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_NULL_RESULT | \
+					PROXY_MODE_SCOPY_SSEEK_PERMIT);
+
+			if (port == NULL)
+				break;
+
+			int _port = atoi(port);
+			place_proxy_data(ports_bag, &((struct proxy_data) {(void*) &_port, sizeof(_port)}));
+		}
+
+		/* Copy the ports to http_data{} */
+
+		if (ports_bag->n_pockets > 0) {
+			if (strcasecmp(conf_key, "http_proxy_method_get") == 0) {
+				htp_data->get_ports = (int*) flatten_proxy_bag(ports_bag)->data;
+				htp_data->n_get_ports = ports_bag->n_pockets;
+			}
+			else {
+				htp_data->connect_ports = (int*) flatten_proxy_bag(ports_bag)->data;
+				htp_data->n_connect_ports = ports_bag->n_pockets;
+			}
+		}
+
+		free_proxy_bag(&ports_bag);
+	}
+	else
+		return PROXY_ERROR_FATAL;
+
+	return PROXY_ERROR_NONE;
+}
+
+int validate_http_proxy_handler(struct proxy_handler* px_handler)
+{
+	if (px_handler == NULL || ((struct http_data*) px_handler->proto_data)->protocol != PROXY_PROTOCOL_HTTP)
 		return PROXY_ERROR_INVAL;
 
-	if (px_handler->proto_data != NULL) {
-		*_http_data = strdup((char*) px_handler->proto_data);
+	struct http_data* htp_data = (struct http_data*) px_handler->proto_data;
 
-		if (*_http_data == NULL)
-			return PROXY_ERROR_INVAL;
+	/* Checks for get and connect ports */
+
+	if ((htp_data->get_ports == NULL || htp_data->n_get_ports < 0) && \
+			(htp_data->connect_ports == NULL || htp_data->n_connect_ports < 0)) {
+		return PROXY_ERROR_INVAL;
+	}
+
+	/* Compute the base64 authpass */
+
+	if (px_handler->px_opt->px_username != NULL && px_handler->px_opt->px_password != NULL) {
+		/* Base64 encode username:password */
+
+		char* user_pass = strappend(3, px_handler->px_opt->px_username, ":", px_handler->px_opt->px_password);
+		char* user_pass64 = base64_encode(user_pass, strlen(user_pass), NULL);
+
+		htp_data->authpass = (void*) strappend(3, PROXY_DEFAULT_HTTP_PROXY_AUTHORIZATION_SCHEME, \
+				" ", user_pass64);	// Proxy-Authorization header
 	}
 
 	return PROXY_ERROR_NONE;
 }
 
-int http_data_free(void** _http_data)
+int free_http_proxy_handler(struct proxy_handler* px_handler)
 {
-	if (_http_data == NULL || *_http_data == NULL)
+	if (px_handler == NULL || px_handler->proto_data == NULL || \
+			((struct http_data*) px_handler->proto_data)->protocol != PROXY_PROTOCOL_HTTP) {
 		return PROXY_ERROR_INVAL;
+	}
 
-	free(*_http_data);
-	*_http_data = NULL;
+	struct http_data* htp_data = (struct http_data*) px_handler->proto_data;
+
+	/* Free pointers */
+
+	free(htp_data->get_ports);
+	free(htp_data->connect_ports);
+	free(htp_data->authpass);
+
+	/* Free the http_data{} */
+
+	free(px_handler->proto_data);
+	px_handler->proto_data = NULL;
+
+	return PROXY_ERROR_NONE;
+}
+
+int fill_http_proxy_request(struct proxy_handler* px_handler, struct proxy_request* px_request)
+{
+	if (px_handler == NULL || px_request == NULL || px_handler->proto_data == NULL || \
+			((struct http_data*) px_handler->proto_data)->protocol != PROXY_PROTOCOL_HTTP) {
+		return PROXY_ERROR_INVAL;
+	}
+
+	px_request->proto_data = (struct http_data*) calloc(1, sizeof(struct http_data));
+
+	struct http_data *hndl_data = (struct http_data*) px_handler->proto_data, \
+			*rqst_data = (struct http_data*) px_request->proto_data;
+
+	rqst_data->protocol = PROXY_PROTOCOL_HTTP;
+
+	if (hndl_data->get_ports != NULL) {
+		rqst_data->get_ports = memndup(hndl_data->get_ports, sizeof(int) * \
+				hndl_data->n_get_ports);
+		rqst_data->n_get_ports = hndl_data->n_get_ports;
+	}
+
+	if (hndl_data->connect_ports != NULL) {
+		rqst_data->connect_ports = memndup(hndl_data->connect_ports, sizeof(int) * \
+				hndl_data->n_connect_ports);
+		rqst_data->n_connect_ports = hndl_data->n_connect_ports;
+	}
+
+	if (hndl_data->authpass != NULL) {
+		rqst_data->authpass = strdup(hndl_data->authpass);
+	}
+
+	return PROXY_ERROR_NONE;
+}
+
+int free_http_proxy_request(struct proxy_request* px_request)
+{
+	if (px_request == NULL || px_request->proto_data == NULL || \
+			((struct http_data*) px_request->proto_data)->protocol != PROXY_PROTOCOL_HTTP) {
+		return PROXY_ERROR_INVAL;
+	}
+
+	struct http_data* htp_data = (struct http_data*) px_request->proto_data;
+
+	/* Free pointers */
+
+	free(htp_data->get_ports);
+	free(htp_data->connect_ports);
+	free(htp_data->authpass);
+
+	/* Free px_request->prot_data */
+
+	free(px_request->proto_data);
+	px_request->proto_data = NULL;
 
 	return PROXY_ERROR_NONE;
 }

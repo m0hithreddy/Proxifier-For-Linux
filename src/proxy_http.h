@@ -15,12 +15,27 @@
 #include <signal.h>
 #include <sys/socket.h>
 
+struct http_data {
+	int protocol;
+	int* get_ports;
+	int n_get_ports;
+	int* connect_ports;
+	int n_connect_ports;
+	char* authpass;
+};
+
 void* http_proxy_init(void* _px_handler);
 
 void* http_proxy_handler(void* _px_request);
 
-int http_data_setup(struct proxy_handler* px_handler, void** _http_data);
+int fill_http_proxy_handler(char* conf_key, char* conf_value, struct proxy_handler* px_handler);
 
-int http_data_free(void** _http_data);
+int validate_http_proxy_handler(struct proxy_handler* px_handler);
+
+int free_http_proxy_handler(struct proxy_handler* px_handler);
+
+int fill_http_proxy_request(struct proxy_handler* px_handler, struct proxy_request* px_request);
+
+int free_http_proxy_request(struct proxy_request* px_request);
 
 #endif /* SRC_PROXY_HTTP_H_ */
