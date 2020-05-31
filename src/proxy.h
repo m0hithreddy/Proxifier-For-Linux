@@ -34,12 +34,21 @@
 
 struct in_addr* get_lo_interface_in_addr();
 
+
 #define PROXY_DEFAULT_SERVER_LISTENER inet_ntop(AF_INET, (void*) get_lo_interface_in_addr(), \
 		(char*) malloc(INET_ADDRSTRLEN), INET_ADDRSTRLEN)
 
+sigset_t* get_sigmask(void);
+
+#define PROXY_DEFAULT_SIGMASK get_sigmask()
+
+#define PROXY_DEFAULT_IOTIMEOUT 60
 #define PROXY_DEFAULT_HTTP_METHOD "CONNECT"
 #define PROXY_DEFAULT_CONNECT_ADDRESS "127.0.0.1:80"
 #define PROXY_DEFAULT_HTTP_VERSION "1.1"
+
+/* Proxy Protocols */
+#define PROXY_PROTOCOL_HTTP 0
 
 /* Proxy Maxs */
 
@@ -71,6 +80,7 @@ struct proxy_handler {
 	/* Variables for Synchronization */
 	int quit;
 	/* Protocol specific data */
+	int protocol;
 	void* proto_data;
 };
 
@@ -88,10 +98,9 @@ struct proxy_request {
 	struct sockaddr_storage addr;
 	int addr_len;
 	/* Protocol specific data */
+	int protocol;
 	void* proto_data;
 };
-
-typedef int (*protocol_data_setup) (struct proxy_handler*, void**);
 
 typedef int (*protocol_data_free) (void**);
 
@@ -103,8 +112,8 @@ struct proxy_handler* create_proxy_handler();
 
 int free_proxy_handler(struct proxy_handler** _px_handler);
 
-struct proxy_request* create_proxy_request(struct proxy_handler* px_handler, protocol_data_setup proto_data_setup);
+struct proxy_request* create_proxy_request(struct proxy_handler* px_handler);
 
-int free_proxy_request(struct proxy_request** px_request, protocol_data_free proto_data_free);
+int free_proxy_request(struct proxy_request** px_request);
 
 #endif /* SRC_PROXY_H_ */

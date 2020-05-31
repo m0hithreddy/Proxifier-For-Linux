@@ -8,6 +8,7 @@
 #include "proxy.h"
 #include "proxy_functions.h"
 #include "proxy_socket.h"
+#include "proxy_http.h"
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -23,6 +24,15 @@ struct in_addr* get_lo_interface_in_addr()
 	lo_in_addr->s_addr = htonl(INADDR_LOOPBACK);
 
 	return lo_in_addr;
+}
+
+sigset_t* get_sigmask(void)
+{
+	sigset_t* sigmask = (sigset_t*) malloc(sizeof(sigset_t));
+	sigemptyset(sigmask);
+	sigaddset(sigmask, SIGRTMIN);
+
+	return sigmask;
 }
 
 struct proxy_options* create_proxy_options(struct proxy_options* px_opt)
@@ -130,34 +140,6 @@ int free_proxy_options(struct proxy_options** _px_opt)
 	return PROXY_ERROR_NONE;
 }
 
-struct proxy_handler* create_proxy_handler()
-{
-	struct proxy_handler* px_handler = (struct proxy_handler*) calloc(1, sizeof(struct proxy_handler));
-
-	px_handler->px_opt = (struct proxy_options*) calloc(1, sizeof(struct proxy_options));
-
-	px_handler->px_opt->px_server = strdup("192.168.43.49");
-	px_handler->px_opt->px_port = strdup("3128");
-	px_handler->px_opt->px_username = NULL;
-	px_handler->px_opt->px_password = NULL;
-	px_handler->px_opt->nrd_ports = 2;
-	px_handler->px_opt->rd_ports = malloc(sizeof(char*) * px_handler->px_opt->nrd_ports);
-	px_handler->px_opt->rd_ports[0] = strdup("80");
-	px_handler->px_opt->rd_ports[1] = strdup("443");
-	/* Network-Variables */
-	px_handler->px_opt->io_timeout = 60;
-	/* Signal Variables */
-	px_handler->px_opt->signo = SIGRTMIN;
-	px_handler->px_opt->sigmask = malloc(sizeof(sigset_t));
-	sigemptyset(px_handler->px_opt->sigmask);
-	sigaddset(px_handler->px_opt->sigmask, px_handler->px_opt->signo);
-
-	px_handler->quit = 0;
-	px_handler->proto_data = NULL;
-
-	return px_handler;
-}
-
 int free_proxy_handler(struct proxy_handler** _px_handler)
 {
 	if (_px_handler == NULL || *_px_handler == NULL)
@@ -184,18 +166,23 @@ int free_proxy_handler(struct proxy_handler** _px_handler)
 	/* Protocol specific data */
 
 	if (px_handler->proto_data != NULL) {
-		free(px_handler->proto_data);
+		if (px_handler->protocol == PROXY_PROTOCOL_HTTP) {
+			if (free_http_proxy_handler(px_handler) != PROXY_ERROR_NONE)
+				return_status = PROXY_ERROR_INVAL;
+		}
+		else
+			free(px_handler->proto_data);
 	}
 
 	/* Free px_handler{} */
 
 	free(px_handler);
-	_px_handler = NULL;
+	*_px_handler = NULL;
 
 	return return_status;
 }
 
-struct proxy_request* create_proxy_request(struct proxy_handler* px_handler, protocol_data_setup proto_data_setup)
+struct proxy_request* create_proxy_request(struct proxy_handler* px_handler)
 {
 	if (px_handler == NULL)
 		return NULL;
@@ -225,42 +212,52 @@ struct proxy_request* create_proxy_request(struct proxy_handler* px_handler, pro
 
 	/* Protocol specific data */
 
-	if (proto_data_setup != NULL) {
-		if ((*proto_data_setup)(px_handler, &(px_request->proto_data)) != PROXY_ERROR_NONE)
+	px_request->protocol = px_handler->protocol;
+
+	if (px_request->protocol == PROXY_PROTOCOL_HTTP) {
+		if (fill_http_proxy_request(px_handler, px_request) != PROXY_ERROR_NONE)
 			return NULL;
 	}
+	else
+		return NULL;
 
 	return px_request;
 }
 
-int free_proxy_request(struct proxy_request** px_request, protocol_data_free proto_data_free)
+int free_proxy_request(struct proxy_request** _px_request)
 {
-	if (px_request == NULL || *px_request == NULL)
+	if (_px_request == NULL || *_px_request == NULL)
 		return PROXY_ERROR_INVAL;
 
 	int free_status = PROXY_ERROR_NONE;
 
+	struct proxy_request* px_request = *_px_request;
+
 	/* Free pointers */
 
-	if ((*px_request)->px_opt != NULL) {
-		if (free_proxy_options(&((*px_request)->px_opt)) != PROXY_ERROR_NONE)
+	if (px_request->px_opt != NULL) {
+		if (free_proxy_options(&px_request->px_opt) != PROXY_ERROR_NONE)
 			free_status = PROXY_ERROR_INVAL;
 	}
 
-	if ((*px_request)->px_client != NULL) {
-		if (free_proxy_client(&((*px_request)->px_client)) != PROXY_ERROR_NONE)
+	if (px_request->px_client != NULL) {
+		if (free_proxy_client(&px_request->px_client) != PROXY_ERROR_NONE)
 			free_status = PROXY_ERROR_INVAL;
 	}
 
-	if (proto_data_free != NULL && (*px_request)->proto_data != NULL) {
-		if ((*proto_data_free)(&((*px_request)->proto_data)) != PROXY_ERROR_NONE)
-			free_status = PROXY_ERROR_INVAL;
+	if (px_request->proto_data != NULL) {
+		if (px_request->protocol == PROXY_PROTOCOL_HTTP) {
+			if (free_http_proxy_request(px_request) != PROXY_ERROR_NONE)
+				free_status = PROXY_ERROR_INVAL;
+		}
+		else
+			free(px_request->proto_data);
 	}
 
 	/* Free px_request{} */
 
-	free(*px_request);
-	*px_request = NULL;
+	free(*_px_request);
+	*_px_request = NULL;
 
 	return free_status;
 }
