@@ -15,6 +15,7 @@
 #include "proxy_structures.h"
 #include <netdb.h>
 #include <signal.h>
+#include <sys/socket.h>
 
 struct proxy_client	{
 	/* Proxy server information */
@@ -35,8 +36,8 @@ struct proxy_client	{
 	char* hostip;
 };
 
-struct proxy_client* ai_flags_sockfd_create_proxy_client(const char* hostname, const char* port, \
-		struct proxy_options* px_opt, int ai_flags, int sockfd);
+struct proxy_client* ai_flags_sockfd_socktype_create_proxy_client(const char* hostname, const char* port, \
+		struct proxy_options* px_opt, int ai_flags, int sockfd, int socktype);
 
 int init_proxy_client(struct proxy_client* px_client);
 
@@ -50,13 +51,16 @@ int proxy_socket_write(struct proxy_client* px_client, struct proxy_data* px_dat
 int proxy_socket_read(struct proxy_client* px_client, struct proxy_data* px_data, int sr_flags, \
 		long* sr_status);
 
-#define create_proxy_client(hostname, port, px_opt) ai_flags_sockfd_create_proxy_client(hostname, \
-		port, px_opt, AI_ADDRCONFIG, -1)
+#define create_proxy_client(hostname, port, px_opt) ai_flags_sockfd_socktype_create_proxy_client(hostname, \
+		port, px_opt, AI_ADDRCONFIG, -1, SOCK_STREAM)
 
-#define ai_flags_create_proxy_client(hostname, port, px_opt, ai_flags) ai_flags_sockfd_create_proxy_client(hostname, \
-		port, px_opt, ai_flags, -1)
+#define ai_flags_create_proxy_client(hostname, port, px_opt, ai_flags) ai_flags_sockfd_socktype_create_proxy_client(hostname, \
+		port, px_opt, ai_flags, -1, SOCK_STREAM)
 
-#define sockfd_create_proxy_client(hostname, port, px_opt, sockfd) ai_flags_sockfd_create_proxy_client(hostname, port, \
-		px_opt, AI_ADDRCONFIG, sockfd)
+#define ai_flags_sockfd_create_proxy_client(hostname, port, px_opt, ai_flags, sockfd) ai_flags_sockfd_socktype_create_proxy_client(hostname, port, \
+		px_opt, ai_flags, sockfd, SOCK_STREAM)
+
+#define socktype_create_proxy_client(hostname, port, px_opt, socktype) ai_flags_sockfd_socktype_create_proxy_client(hostname, port, \
+		px_opt, AI_ADDRCONFIG, -1, socktype)
 
 #endif /* SRC_PROXY_SOCKET_H_ */

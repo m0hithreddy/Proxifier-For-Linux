@@ -25,8 +25,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
-struct proxy_client* ai_flags_sockfd_create_proxy_client(const char* hostname, const char* port, \
-		struct proxy_options* px_opt, int ai_flags, int sockfd) {
+struct proxy_client* ai_flags_sockfd_socktype_create_proxy_client(const char* hostname, const char* port, \
+		struct proxy_options* px_opt, int ai_flags, int sockfd, int socktype) {
 
 	struct proxy_client* px_client = (struct proxy_client*) calloc(1, sizeof(struct proxy_client));
 
@@ -43,8 +43,8 @@ struct proxy_client* ai_flags_sockfd_create_proxy_client(const char* hostname, c
 	/* Standard IPv4 TCP socket options */
 
 	px_client->family = AF_INET;
-	px_client->type = SOCK_STREAM;
-	px_client->protocol = IPPROTO_TCP;
+	px_client->type = socktype;
+	px_client->protocol = 0;
 
 	/* Set getaddrinfo() flags */
 
@@ -98,7 +98,7 @@ int init_proxy_client(struct proxy_client* px_client)
 
 		/* If AI_PASSIVE is set, setup the socket for accept() routine else TCP Connect */
 
-		if (px_client->ai_flags & AI_PASSIVE)	{
+		if ((px_client->ai_flags & AI_PASSIVE) || px_client->type == SOCK_DGRAM) {
 			/* Bind to address */
 
 			if (bind(px_client->sockfd, rp->ai_addr, rp->ai_addrlen) != 0)
@@ -116,10 +116,12 @@ int init_proxy_client(struct proxy_client* px_client)
 			snprintf(px_client->port, 6, "%d", htons((rp->ai_family == AF_INET) ? \
 					((struct sockaddr_in*) &sock_res)->sin_port : ((struct sockaddr_in6*) &sock_res)->sin6_port));
 
-			/* Put the socket in passive mode */
+			if (px_client->type == SOCK_STREAM) {
+				/* Put the socket in passive mode */
 
-			if (listen(px_client->sockfd, PROXY_DEFAULT_ACCEPT_BACKLOG) != 0)
-				goto next;
+				if (listen(px_client->sockfd, PROXY_DEFAULT_ACCEPT_BACKLOG) != 0)
+					goto next;
+			}
 
 			goto success;
 		}
