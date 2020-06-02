@@ -8,6 +8,7 @@
 #include "proxifier.h"
 #include "proxy.h"
 #include "proxy_http.h"
+#include "proxy_dns.h"
 #include "proxy_structures.h"
 #include "proxy_configuration.h"
 #include <signal.h>
@@ -23,7 +24,7 @@ int main(int argc, char** argv)
 	sigemptyset(&sigmask);
 	sigaddset(&sigmask, SIGPIPE);	// get EPIPE instead
 	sigaddset(&sigmask, SIGRTMIN);	// use as sync signal
-	sigaddset(&sigmask, SIGCHLD);	// use a notifier for child termination
+	sigaddset(&sigmask, SIGCHLD);	// use as a notifier for child termination
 	sigaddset(&sigmask, SIGTERM);	// systemctl signaling for quit
 	sigaddset(&sigmask, SIGINT);	// just in case of user interrupt
 
@@ -41,19 +42,37 @@ int main(int argc, char** argv)
 		goto proxifier_quit;
 	}
 
+	/* Register the proxy_handlers */
+
+	struct proxy_pocket* tmp_pocket = NULL;
+
 	for (struct proxy_pocket* px_pocket = handlers_bag->start; px_pocket != NULL; ) {
 
 		struct proxy_handler* px_handler = (struct proxy_handler*) px_pocket->data;
 
 		if (px_handler->protocol == PROXY_PROTOCOL_HTTP) {
-			pthread_create(&px_handler->tid, NULL, http_proxy_init, px_handler);
-			px_pocket = px_pocket->next;
+			if (pthread_create(&px_handler->tid, NULL, http_proxy_init, px_handler) != 0)
+				goto delete_next;
+			else
+				goto normal_next;
 		}
-		else {
-			struct proxy_pocket* tmp_pocket = px_pocket->next;
-			delete_proxy_pocket(handlers_bag, &px_pocket);
-			px_pocket = tmp_pocket;
+		else if (px_handler->protocol == PROXY_PROTOCOL_DNS) {
+			if (pthread_create(&px_handler->tid, NULL, dns_proxy_init, px_handler) != 0)
+				goto delete_next;
+			else
+				goto normal_next;
 		}
+		else
+			goto delete_next;
+
+		normal_next:
+		px_pocket = px_pocket->next;
+		continue;
+
+		delete_next:
+		tmp_pocket = px_pocket->next;
+		delete_proxy_pocket(handlers_bag, &px_pocket);
+		px_pocket = tmp_pocket;
 	}
 
 	if (handlers_bag->n_pockets <= 0)

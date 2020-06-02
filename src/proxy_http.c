@@ -483,8 +483,16 @@ int fill_http_proxy_handler(char* conf_key, char* conf_value, struct proxy_handl
 
 int validate_http_proxy_handler(struct proxy_handler* px_handler)
 {
-	if (px_handler == NULL || ((struct http_data*) px_handler->proto_data)->protocol != PROXY_PROTOCOL_HTTP)
+	if (px_handler == NULL || ((struct http_data*) px_handler->proto_data)->protocol != PROXY_PROTOCOL_HTTP) {
 		return PROXY_ERROR_INVAL;
+	}
+
+	/* Proxy Server Information checks */
+
+	if (px_handler->px_opt == NULL || px_handler->px_opt->px_server == NULL || \
+			px_handler->px_opt->px_port == NULL) {
+		return PROXY_ERROR_INVAL;
+	}
 
 	struct http_data* htp_data = (struct http_data*) px_handler->proto_data;
 

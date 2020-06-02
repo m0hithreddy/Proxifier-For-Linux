@@ -10,6 +10,7 @@
 #include "proxy_functions.h"
 #include "proxy.h"
 #include "proxy_http.h"
+#include "proxy_dns.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -61,7 +62,7 @@ int get_proxy_handlers(char* config_file, struct proxy_bag* gh_results)
 
 	char* conf_key = NULL;
 	char* conf_value = NULL;
-	int key_read = 0, new_handler = 1, fh_return = PROXY_ERROR_NONE;
+	int key_read = 0, fh_return = PROXY_ERROR_NONE;
 	struct config_state* conf_state = NULL;
 
 	for ( ; ; ) {
@@ -143,15 +144,17 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 
 			return PROXY_ERROR_NONE;
 		}
+		else
+			return PROXY_ERROR_FATAL;
 	}
 
 	/* Checks for conf_block starting and ending */
 
 	if (conf_state->start <= 0)	// block did not start
-		return PROXY_ERROR_FATAL;
+		return PROXY_ERROR_INVAL;
 
 	if (conf_state->end > 0)	// block already ended
-		return PROXY_ERROR_FATAL;
+		return PROXY_ERROR_INVAL;
 
 	/* Initialize conf_state->px_handler{} and conf_state->px_handler->px_opt{} */
 
@@ -168,8 +171,9 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 
 		/* Default px_opt{} config_options */
 
-		conf_state->px_handler->px_opt->sigmask = get_sigmask();
+		conf_state->px_handler->px_opt->sigmask = PROXY_DEFAULT_SYNC_MASK;
 		conf_state->px_handler->px_opt->io_timeout = PROXY_DEFAULT_IOTIMEOUT;
+		conf_state->px_handler->px_opt->signo = PROXY_DEFAULT_SYNC_SIGNAL;
 	}
 
 	/* General configuration options */
@@ -177,10 +181,14 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 	if (strcasecmp(conf_key, "proxy_type") == 0) {
 		if (strcasecmp(conf_value, "HTTP_PROXY") == 0) {
 			conf_state->px_handler->protocol = PROXY_PROTOCOL_HTTP;
-			return PROXY_ERROR_RETRY;
+		}
+		else if (strcasecmp(conf_value, "DNS_PROXY") == 0) {
+			conf_state->px_handler->protocol = PROXY_PROTOCOL_DNS;
 		}
 		else
 			return PROXY_ERROR_FATAL;
+
+		return PROXY_ERROR_RETRY;
 	}
 	else if (strcasecmp(conf_key, "proxy_server_address") == 0) {
 		struct proxy_data* value_data = (struct proxy_data*) malloc(sizeof(struct proxy_data));
@@ -192,13 +200,13 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT);
 
 		if (value_data == NULL || value_data->data == NULL || value_data->size <= 0)
-			return PROXY_ERROR_FATAL;
+			return PROXY_ERROR_RETRY;
 
 		char* hostname = NULL;
 		scopy(value_data, " ,", &hostname, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_NULL_RESULT);
 
 		if (hostname == NULL)
-			return PROXY_ERROR_FATAL;
+			return PROXY_ERROR_RETRY;
 
 		conf_state->px_handler->px_opt->px_server = strdup(hostname);
 
@@ -214,13 +222,13 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT);
 
 		if (value_data == NULL || value_data->data == NULL || value_data->size <= 0)
-			return PROXY_ERROR_FATAL;
+			return PROXY_ERROR_RETRY;
 
 		char* port = NULL;
 		scopy(value_data, " ,", &port, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_NULL_RESULT);
 
 		if (port == NULL)
-			return PROXY_ERROR_FATAL;
+			return PROXY_ERROR_RETRY;
 
 		conf_state->px_handler->px_opt->px_port = strdup(port);
 
@@ -242,7 +250,7 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 
 		return PROXY_ERROR_RETRY;
 	}
-	else if (strcasecmp(conf_key, "proxy_redirection_ports") == 0) {
+	else if (strcasecmp(conf_key, "proxy_redirection_port") == 0) {
 		struct proxy_data* value_data = (struct proxy_data*) malloc(sizeof(struct proxy_data));
 		value_data->data = conf_value;
 		value_data->size = strlen(conf_value);
@@ -312,15 +320,14 @@ int validate_proxy_handler(struct proxy_handler* px_handler)
 		if (validate_http_proxy_handler(px_handler) != PROXY_ERROR_NONE)
 			return PROXY_ERROR_INVAL;
 	}
+	else if (px_handler->protocol == PROXY_PROTOCOL_DNS) {
+		if (validate_dns_proxy_handler(px_handler) != PROXY_ERROR_NONE)
+			return PROXY_ERROR_INVAL;
+	}
 	else
 		return PROXY_ERROR_INVAL;
 
 	/* Proxy option checks */
-
-		/* Proxy server information checks */
-
-	if (px_handler->px_opt->px_server == NULL || px_handler->px_opt->px_port == NULL)
-		return PROXY_ERROR_INVAL;
 
 		/* Proxy redirection ports information checks */
 

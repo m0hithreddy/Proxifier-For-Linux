@@ -38,9 +38,11 @@ struct in_addr* get_lo_interface_in_addr();
 #define PROXY_DEFAULT_SERVER_LISTENER inet_ntop(AF_INET, (void*) get_lo_interface_in_addr(), \
 		(char*) malloc(INET_ADDRSTRLEN), INET_ADDRSTRLEN)
 
-sigset_t* get_sigmask(void);
+#define PROXY_DEFAULT_SYNC_SIGNAL SIGRTMIN
 
-#define PROXY_DEFAULT_SIGMASK get_sigmask()
+sigset_t* get_syncmask(void);
+
+#define PROXY_DEFAULT_SYNC_MASK get_syncmask()
 
 #define PROXY_DEFAULT_IOTIMEOUT 60
 #define PROXY_DEFAULT_HTTP_METHOD "CONNECT"
@@ -49,6 +51,7 @@ sigset_t* get_sigmask(void);
 
 /* Proxy Protocols */
 #define PROXY_PROTOCOL_HTTP 0
+#define PROXY_PROTOCOL_DNS 1
 
 /* Proxy Maxs */
 
