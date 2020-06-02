@@ -121,7 +121,7 @@ int deconfig_fwall(struct proxy_handler* px_handler)
 		}
 	}
 
-	if (px_handler->px_opt->rd_ports != NULL && px_handler->px_opt->nrd_ports > 0 && px_handler->pxl_server != NULL && \
+	if (px_handler->px_opt->rd_ports != NULL && px_handler->px_opt->nrd_ports > 0 && \
 			px_handler->pxl_server->hostip != NULL && px_handler->pxl_server->port != NULL) {
 		/* Remove Redirects traffic coming from specific ports to server Rule */
 
