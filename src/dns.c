@@ -263,7 +263,7 @@ struct dns_msg* parse_dns_query(struct proxy_data* dns_data, int pd_flags)
 
 		/* OPcode */
 
-	if (bit_count + 4 > bit_count)
+	if (bit_count + 4 > data_size)
 		goto parse_error;
 
 	for (int i = 0; i < 4; i++) {
@@ -293,6 +293,7 @@ struct dns_msg* parse_dns_query(struct proxy_data* dns_data, int pd_flags)
 		goto parse_error;
 
 	dns_query->header->rd[0] = get_bit(dns_data->data, bit_count);
+	bit_count++;
 
 		/* RA flag */
 
@@ -369,6 +370,8 @@ struct dns_msg* parse_dns_query(struct proxy_data* dns_data, int pd_flags)
 
 		int ques_start = bit_count, cur_bit = bit_count, add_flag = 1;
 
+		dns_query->question[ques_count].dname = (char*) calloc(1, sizeof(char));
+
 		for ( ; ; ) {
 			if (cur_bit + 2 > data_size)
 				goto parse_error;
@@ -387,14 +390,8 @@ struct dns_msg* parse_dns_query(struct proxy_data* dns_data, int pd_flags)
 				if (add_flag)
 					bit_count = cur_bit;
 
-				if (label_len == 0) {
-					if (dns_query->question[ques_count].dname == NULL)
-						dns_query->question[ques_count].dname = (char*) calloc(1, sizeof(char));
-
+				if (label_len == 0)
 					break;
-				}
-
-				dns_query->question[ques_count].dname = "";
 
 				for (int label_count = 0; label_count < label_len; label_count++) {
 					if (cur_bit + 8 > data_size)
@@ -411,7 +408,7 @@ struct dns_msg* parse_dns_query(struct proxy_data* dns_data, int pd_flags)
 					dns_query->question->dname = strappend(2, dns_query->question->dname, ch);
 				}
 
-				strappend(2, dns_query->question->dname, ".");
+				dns_query->question->dname = strappend(2, dns_query->question->dname, ".");
 			}
 			else if (type == 3) {
 				if (cur_bit + 14 > data_size)
