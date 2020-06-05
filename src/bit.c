@@ -80,8 +80,8 @@ uint32_t bits_to_int(bit* bits, unsigned int _bit_count)
 	uint32_t value, mask = 0b1;
 	memset((void*) &value, 0, sizeof(value));
 
-	unsigned int bit_count = _bit_count < sizeof(value) ? \
-			_bit_count : sizeof(value);
+	unsigned int bit_count = _bit_count < sizeof(value) * 8 ? \
+			_bit_count : sizeof(value) * 8;
 
 	for (unsigned int cur_bit = 0; cur_bit < bit_count; cur_bit++) {
 		if (bits[cur_bit] == 1) {
@@ -97,8 +97,8 @@ uint32_t bitarray_to_int(void* bit_array, unsigned long bit_start, unsigned int 
 	uint32_t value, mask = 0b1;
 	memset((void*) &value, 0, sizeof(value));
 
-	unsigned int bit_count = _bit_count < sizeof(value) ? \
-			_bit_count : sizeof(value);
+	unsigned int bit_count = _bit_count < sizeof(value) * 8 ? \
+			_bit_count : sizeof(value) * 8;
 
 	for (unsigned int cur_bit = 0; cur_bit < bit_count; cur_bit++) {
 		if (get_bit(bit_array, bit_start + cur_bit) == 1) {
@@ -111,8 +111,8 @@ uint32_t bitarray_to_int(void* bit_array, unsigned long bit_start, unsigned int 
 
 int int_to_bitarray(uint32_t value, void* bit_array, unsigned long bit_start, unsigned int _bit_count)
 {
-	unsigned int bit_count = _bit_count < sizeof(value) ? \
-			_bit_count : sizeof(value);
+	unsigned int bit_count = _bit_count < sizeof(value) * 8 ? \
+			_bit_count : sizeof(value) * 8;
 
 	uint32_t mask = 0b1 << (bit_count - 1);
 
