@@ -67,4 +67,6 @@ struct proxy_data* create_dns_response(struct dns_msg* dns_response, int cd_flag
 
 struct dns_msg* parse_dns_query(struct proxy_data* dns_data, int pd_flags);
 
+struct proxy_data* host_to_domain(char* hostname);
+
 #endif /* SRC_DNS_H_ */

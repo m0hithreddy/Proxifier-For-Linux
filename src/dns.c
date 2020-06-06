@@ -453,3 +453,69 @@ struct dns_msg* parse_dns_query(struct proxy_data* dns_data, int pd_flags)
 
 	return NULL;
 }
+
+struct proxy_data* host_to_domain(char* hostname)
+{
+	if (hostname == NULL)
+		return NULL;
+
+	/* Initialize the domain_data{} */
+
+	struct proxy_data* domain_data = (struct proxy_data*) calloc(1, \
+			sizeof(struct proxy_data));
+
+	/* If an empty hostname is given */
+
+	if (*hostname == '\0') {
+		domain_data->data = calloc(1, 1);
+		domain_data->size = 1;
+
+		return domain_data;
+	}
+
+	/* Initialize the domain_data->data */
+
+	unsigned int hname_len = strlen(hostname);
+
+	domain_data->data = calloc(1, hname_len + 2);
+	uint8_t* domain_name = (uint8_t*) domain_data->data;
+
+	/* Loop by label and convert them into domain format */
+
+	unsigned int dname_count = 0, hname_count = 0, label_len = 0;
+	char* dot_ptr = NULL;
+
+	for ( ; hname_count < hname_len; ) {
+		/* Calculate the "." position and compute the label length */
+
+		dot_ptr = strstr(hostname + hname_count, ".");
+
+		if (dot_ptr == NULL)
+			label_len = hname_len - hname_count;
+		else
+			label_len = (long) (dot_ptr - hostname - hname_count);
+
+		if (label_len > 63)
+			return NULL;
+
+		/* Copy the label characters */
+
+		domain_name[dname_count] = label_len;
+		dname_count++;
+
+		strncpy(domain_name + dname_count, hostname + hname_count, label_len);
+		hname_count = hname_count + label_len + 1;
+		dname_count = dname_count + label_len;
+	}
+
+	/* The ending label */
+
+	domain_name[dname_count] = 0;
+	dname_count++;
+
+	/* Return the domain_data{} */
+
+	domain_data->size = dname_count;
+
+	return domain_data;
+}
