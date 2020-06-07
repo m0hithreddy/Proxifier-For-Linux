@@ -10,6 +10,7 @@
 
 #define PROXY_DEFAULT_HTTP_USER_AGENT "PROXIFIER/1.0"
 #define PROXY_DEFAULT_HTTP_PROXY_AUTHORIZATION_SCHEME "basic"
+
 #include "proxy.h"
 #include <pthread.h>
 #include <signal.h>

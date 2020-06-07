@@ -262,7 +262,49 @@ void* http_proxy_handler(void* _px_request)
 	snprintf(org_port, 6, "%d", htons(org_addr.ss_family == AF_INET ? \
 			((struct sockaddr_in*) &org_addr)->sin_port : ((struct sockaddr_in6*) &org_addr)->sin6_port));
 
-	/* Create HTTP request */
+	/* Check if configured for non-Connect proxy methods */
+
+	for (int gport_count = 0; gport_count < htp_data->n_get_ports; gport_count++) {
+
+		if (htp_data->get_ports[gport_count] == atoi(org_port)) {
+			/* Read the HTTP request from the client */
+
+			struct proxy_bag* http_results = create_proxy_bag();
+
+			if (http_method(px_request->px_client, NULL, HTTP_MODE_READ_HEADERS, \
+					http_results) != PROXY_ERROR_NONE) {
+				goto handler_quit;
+			}
+
+			/* Parse the HTTP request */
+
+			struct http_request* s_request = parse_http_request((struct proxy_data*) http_results->start->data);
+
+			if (s_request == NULL)
+				goto handler_quit;
+
+			/* Modify HTTP request for sending to  proxy server */
+
+			s_request->path = strappend(3, "http://", \
+					s_request->host != NULL ? s_request->host : org_dst, s_request->path);
+
+			s_request->version = "1.0";
+			s_request->connection = NULL;
+
+			if (htp_data != NULL && htp_data->authpass != NULL) {
+				s_request->proxy_authorization = strdup(htp_data->authpass);
+			}
+
+			if (http_method(px_server, create_http_request(s_request), \
+					HTTP_MODE_SEND_REQUEST, NULL) != PROXY_ERROR_NONE) {
+				goto handler_quit;
+			}
+
+			goto tunnel_data;
+		}
+	}
+
+	/* Connect HTTP Proxy method */
 
 	struct http_request s_request;
 	memset(&s_request, 0, sizeof(struct http_request));
@@ -270,7 +312,7 @@ void* http_proxy_handler(void* _px_request)
 	s_request.method = "CONNECT";
 	s_request.path = strappend(3, org_dst, ":", org_port);
 	s_request.version = "1.1";
-	s_request.host = strdup(org_dst);
+	s_request.host = strappend(3, org_dst, ":", org_port);
 	s_request.user_agent = PROXY_DEFAULT_HTTP_USER_AGENT;
 
 	if (htp_data != NULL && htp_data->authpass != NULL) {
@@ -298,6 +340,8 @@ void* http_proxy_handler(void* _px_request)
 			strcmp(s_response->status_code, "200") != 0) {
 		goto handler_quit;
 	}
+
+	tunnel_data:;
 
 	/* Timeout initializations */
 
@@ -596,4 +640,3 @@ int free_http_proxy_request(struct proxy_request* px_request)
 
 	return PROXY_ERROR_NONE;
 }
-
