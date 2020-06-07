@@ -8,37 +8,38 @@
 #ifndef SRC_HTTP_H_
 #define SRC_HTTP_H_
 
-#define HTTP_CONSTANT_REQUEST_HEADERS_MAPPING " User-Agent 6 \
-Accept 7 \
-Accept-Encoding 8 \
-Connection 9 \
-Content-Type 10 \
-Content-Length 11 \
-Accept-Language 12 \
-Referer 13 \
-Upgrade-Insecure-Requests 14 \
-If-Modified-Since 15 \
-If-None-Match 16 \
-Cache-Control 17 \
-Date 18 \
-Pragma 19 \
-Trailer 20 \
-Transfer-Encoding 21 \
-Upgrade 22 \
-Via 23 \
-Warning 24 \
-Accept-Charset 25 \
-Authorization 26 \
-Expect 27 \
-From 28 \
+#define HTTP_CONSTANT_REQUEST_HEADERS_MAPPING " HOST 4 \
+User-Agent 5 \
+Accept 6 \
+Accept-Encoding 7 \
+Connection 8 \
+Content-Type 9 \
+Content-Length 10 \
+Accept-Language 11 \
+Referer 12 \
+Upgrade-Insecure-Requests 13 \
+If-Modified-Since 14 \
+If-None-Match 15 \
+Cache-Control 16 \
+Date 17 \
+Pragma 18 \
+Trailer 19 \
+Transfer-Encoding 20 \
+Upgrade 21 \
+Via 22 \
+Warning 23 \
+Accept-Charset 24 \
+Authorization 25 \
+Expect 26 \
+From 27 \
+If-Match 28 \
 If-Match 29 \
-If-Match 30 \
-If-Unmodified-Since 31 \
-Max-Forwards 32 \
-Proxy-Authorization 33 \
-Range 34 \
-TE 35 \
-Proxy-Connection 36 "
+If-Unmodified-Since 30 \
+Max-Forwards 31 \
+Proxy-Authorization 32 \
+Range 33 \
+TE 34 \
+Proxy-Connection 35 "
 
 #define HTTP_CONSTANT_RESPONSE_HEADERS_MAPPING " DATE 4 \
 CONTENT-TYPE 5 \
@@ -86,7 +87,6 @@ struct http_request {
 	char* path;
 	char* version;
 	char* host;
-	char* port;
 	char* user_agent;
 	char* accept;
 	char* accept_encoding;
@@ -125,6 +125,7 @@ struct http_request {
 	char* url;
 	char* hostip;
 	char* scheme;
+	char* port;
 };
 
 struct http_response
@@ -171,6 +172,8 @@ struct http_response
 };
 
 struct proxy_data* create_http_request(struct http_request* s_request);
+
+struct http_request* parse_http_request(struct proxy_data* request);
 
 struct http_response* parse_http_response(struct proxy_data *response);
 
