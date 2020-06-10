@@ -659,6 +659,7 @@ LIBOBJS
 EGREP
 GREP
 CPP
+SED
 INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
@@ -2226,7 +2227,7 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
 
-# Saftey to check to verify src directory is sane
+# Saftey checks to verify whether src directory is sane
 
 
 
@@ -2257,15 +2258,15 @@ else
   as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
 
 fi
-as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_http.c" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_http.c" >&5
-$as_echo_n "checking for ${srcdir}/src/proxy_http.c... " >&6; }
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxifier.h" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxifier.h" >&5
+$as_echo_n "checking for ${srcdir}/src/proxifier.h... " >&6; }
 if eval \${$as_ac_File+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   test "$cross_compiling" = yes &&
   as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "${srcdir}/src/proxy_http.c"; then
+if test -r "${srcdir}/src/proxifier.h"; then
   eval "$as_ac_File=yes"
 else
   eval "$as_ac_File=no"
@@ -2277,88 +2278,7 @@ $as_echo "$ac_res" >&6; }
 if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
 
 cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_${srcdir}/src/proxy_http.c" | $as_tr_cpp` 1
-_ACEOF
-
-else
-  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
-
-fi
-as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_https.c" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_https.c" >&5
-$as_echo_n "checking for ${srcdir}/src/proxy_https.c... " >&6; }
-if eval \${$as_ac_File+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "${srcdir}/src/proxy_https.c"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-eval ac_res=\$$as_ac_File
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
-
-cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_${srcdir}/src/proxy_https.c" | $as_tr_cpp` 1
-_ACEOF
-
-else
-  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
-
-fi
-as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_dns.c" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_dns.c" >&5
-$as_echo_n "checking for ${srcdir}/src/proxy_dns.c... " >&6; }
-if eval \${$as_ac_File+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "${srcdir}/src/proxy_dns.c"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-eval ac_res=\$$as_ac_File
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
-
-cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_${srcdir}/src/proxy_dns.c" | $as_tr_cpp` 1
-_ACEOF
-
-else
-  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
-
-fi
-as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/logger.c" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/logger.c" >&5
-$as_echo_n "checking for ${srcdir}/src/logger.c... " >&6; }
-if eval \${$as_ac_File+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "${srcdir}/src/logger.c"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-eval ac_res=\$$as_ac_File
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
-
-cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_${srcdir}/src/logger.c" | $as_tr_cpp` 1
+#define `$as_echo "HAVE_${srcdir}/src/proxifier.h" | $as_tr_cpp` 1
 _ACEOF
 
 else
@@ -2419,15 +2339,15 @@ else
   as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
 
 fi
-as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/socket.c" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/socket.c" >&5
-$as_echo_n "checking for ${srcdir}/src/socket.c... " >&6; }
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_http.c" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_http.c" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_http.c... " >&6; }
 if eval \${$as_ac_File+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   test "$cross_compiling" = yes &&
   as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "${srcdir}/src/socket.c"; then
+if test -r "${srcdir}/src/proxy_http.c"; then
   eval "$as_ac_File=yes"
 else
   eval "$as_ac_File=no"
@@ -2439,22 +2359,22 @@ $as_echo "$ac_res" >&6; }
 if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
 
 cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_${srcdir}/src/socket.c" | $as_tr_cpp` 1
+#define `$as_echo "HAVE_${srcdir}/src/proxy_http.c" | $as_tr_cpp` 1
 _ACEOF
 
 else
   as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
 
 fi
-as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/socket.h" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/socket.h" >&5
-$as_echo_n "checking for ${srcdir}/src/socket.h... " >&6; }
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_http.h" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_http.h" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_http.h... " >&6; }
 if eval \${$as_ac_File+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   test "$cross_compiling" = yes &&
   as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "${srcdir}/src/socket.h"; then
+if test -r "${srcdir}/src/proxy_http.h"; then
   eval "$as_ac_File=yes"
 else
   eval "$as_ac_File=no"
@@ -2466,7 +2386,439 @@ $as_echo "$ac_res" >&6; }
 if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
 
 cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_${srcdir}/src/socket.h" | $as_tr_cpp` 1
+#define `$as_echo "HAVE_${srcdir}/src/proxy_http.h" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_socket.c" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_socket.c" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_socket.c... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/proxy_socket.c"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/proxy_socket.c" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_socket.h" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_socket.h" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_socket.h... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/proxy_socket.h"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/proxy_socket.h" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_structures.c" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_structures.c" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_structures.c... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/proxy_structures.c"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/proxy_structures.c" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_structures.h" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_structures.h" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_structures.h... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/proxy_structures.h"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/proxy_structures.h" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_functions.c" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_functions.c" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_functions.c... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/proxy_functions.c"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/proxy_functions.c" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_functions.h" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_functions.h" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_functions.h... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/proxy_functions.h"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/proxy_functions.h" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_configuration.c" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_configuration.c" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_configuration.c... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/proxy_configuration.c"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/proxy_configuration.c" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_configuration.h" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_configuration.h" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_configuration.h... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/proxy_configuration.h"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/proxy_configuration.h" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_dns.c" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_dns.c" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_dns.c... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/proxy_dns.c"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/proxy_dns.c" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/proxy_dns.h" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/proxy_dns.h" >&5
+$as_echo_n "checking for ${srcdir}/src/proxy_dns.h... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/proxy_dns.h"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/proxy_dns.h" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/http.c" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/http.c" >&5
+$as_echo_n "checking for ${srcdir}/src/http.c... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/http.c"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/http.c" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/http.h" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/http.h" >&5
+$as_echo_n "checking for ${srcdir}/src/http.h... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/http.h"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/http.h" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/dns.c" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/dns.c" >&5
+$as_echo_n "checking for ${srcdir}/src/dns.c... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/dns.c"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/dns.c" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/dns.h" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/dns.h" >&5
+$as_echo_n "checking for ${srcdir}/src/dns.h... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/dns.h"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/dns.h" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/bit.c" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/bit.c" >&5
+$as_echo_n "checking for ${srcdir}/src/bit.c... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/bit.c"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/bit.c" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/bit.h" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/bit.h" >&5
+$as_echo_n "checking for ${srcdir}/src/bit.h... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/bit.h"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/bit.h" | $as_tr_cpp` 1
 _ACEOF
 
 else
@@ -2521,6 +2873,87 @@ if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
 
 cat >>confdefs.h <<_ACEOF
 #define `$as_echo "HAVE_${srcdir}/src/base64.h" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/firewall.c" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/firewall.c" >&5
+$as_echo_n "checking for ${srcdir}/src/firewall.c... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/firewall.c"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/firewall.c" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/src/firewall.h" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/src/firewall.h" >&5
+$as_echo_n "checking for ${srcdir}/src/firewall.h... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/src/firewall.h"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/src/firewall.h" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Repository corrupted, redownload the source." "$LINENO" 5
+
+fi
+as_ac_File=`$as_echo "ac_cv_file_${srcdir}/proxifier.conf" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${srcdir}/proxifier.conf" >&5
+$as_echo_n "checking for ${srcdir}/proxifier.conf... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "${srcdir}/proxifier.conf"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_${srcdir}/proxifier.conf" | $as_tr_cpp` 1
 _ACEOF
 
 else
@@ -3477,6 +3910,76 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for a sed that does not truncate output" >&5
+$as_echo_n "checking for a sed that does not truncate output... " >&6; }
+if ${ac_cv_path_SED+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+            ac_script=s/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/
+     for ac_i in 1 2 3 4 5 6 7; do
+       ac_script="$ac_script$as_nl$ac_script"
+     done
+     echo "$ac_script" 2>/dev/null | sed 99q >conftest.sed
+     { ac_script=; unset ac_script;}
+     if test -z "$SED"; then
+  ac_path_SED_found=false
+  # Loop through the user's path and test for each of PROGNAME-LIST
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_prog in sed gsed; do
+    for ac_exec_ext in '' $ac_executable_extensions; do
+      ac_path_SED="$as_dir/$ac_prog$ac_exec_ext"
+      as_fn_executable_p "$ac_path_SED" || continue
+# Check for GNU ac_path_SED and select it if it is found.
+  # Check for GNU $ac_path_SED
+case `"$ac_path_SED" --version 2>&1` in
+*GNU*)
+  ac_cv_path_SED="$ac_path_SED" ac_path_SED_found=:;;
+*)
+  ac_count=0
+  $as_echo_n 0123456789 >"conftest.in"
+  while :
+  do
+    cat "conftest.in" "conftest.in" >"conftest.tmp"
+    mv "conftest.tmp" "conftest.in"
+    cp "conftest.in" "conftest.nl"
+    $as_echo '' >> "conftest.nl"
+    "$ac_path_SED" -f conftest.sed < "conftest.nl" >"conftest.out" 2>/dev/null || break
+    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
+    as_fn_arith $ac_count + 1 && ac_count=$as_val
+    if test $ac_count -gt ${ac_path_SED_max-0}; then
+      # Best one so far, save it but keep looking for a better one
+      ac_cv_path_SED="$ac_path_SED"
+      ac_path_SED_max=$ac_count
+    fi
+    # 10*(2^10) chars as input seems more than enough
+    test $ac_count -gt 10 && break
+  done
+  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
+esac
+
+      $ac_path_SED_found && break 3
+    done
+  done
+  done
+IFS=$as_save_IFS
+  if test -z "$ac_cv_path_SED"; then
+    as_fn_error $? "no acceptable sed could be found in \$PATH" "$LINENO" 5
+  fi
+else
+  ac_cv_path_SED=$SED
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_SED" >&5
+$as_echo "$ac_cv_path_SED" >&6; }
+ SED="$ac_cv_path_SED"
+  rm -f conftest.sed
+
+
 # Some predefined header checks
 
 
@@ -3948,7 +4451,28 @@ fi
 # Checks for system headers
 
 for ac_header in stdio.h \
-stdlib.h
+stdlib.h \
+string.h \
+stddef.h \
+stdint.h \
+stdbool.h \
+stdarg.h \
+errno.h \
+fcntl.h \
+unistd.h \
+signal.h \
+limits.h \
+netdb.h \
+sys/socket.h \
+sys/types.h \
+sys/select.h \
+sys/time.h \
+sys/signalfd.h \
+sys/wait.h \
+netinet/in.h \
+netinet/tcp.h \
+arpa/inet.h \
+linux/netfilter_ipv4.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -3968,7 +4492,50 @@ done
 # Checks for system funcs
 
 for ac_func in printf \
-strcmp
+atol \
+exit \
+fopen \
+read \
+strcmp \
+strlen \
+strstr \
+strcasestr \
+strncpy \
+strncasecmp \
+strcasecmp \
+strdup \
+execlp \
+sigaddset \
+sigemptyset \
+sigwait \
+fork \
+waitpid \
+memcpy \
+malloc \
+calloc \
+memset \
+fcntl \
+signalfd \
+select \
+close \
+recvfrom \
+sendto \
+memmem \
+accept \
+getsockopt \
+inet_ntop \
+snprintf \
+htons \
+htonl \
+atoi \
+free \
+getaddrinfo \
+socket \
+bind \
+getsockname \
+listen \
+connect \
+write
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -3984,10 +4551,31 @@ fi
 done
 
 
+#Checks for optional system functions
+
+for ac_func in memndup
+do :
+  ac_fn_c_check_func "$LINENO" "memndup" "ac_cv_func_memndup"
+if test "x$ac_cv_func_memndup" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MEMNDUP 1
+_ACEOF
+
+fi
+done
+
+
 # Checks for system symbols
 
 ac_fn_c_check_decl "$LINENO" "NULL" "ac_cv_have_decl_NULL" "#include<stddef.h>
 #include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
 
 "
 if test "x$ac_cv_have_decl_NULL" = xyes; then :
@@ -4006,6 +4594,13 @@ else
 fi
 ac_fn_c_check_decl "$LINENO" "LONG_MAX" "ac_cv_have_decl_LONG_MAX" "#include<stddef.h>
 #include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
 
 "
 if test "x$ac_cv_have_decl_LONG_MAX" = xyes; then :
@@ -4022,6 +4617,779 @@ if test $ac_have_decl = 1; then :
 else
   as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
 fi
+ac_fn_c_check_decl "$LINENO" "WIFEXITED" "ac_cv_have_decl_WIFEXITED" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_WIFEXITED" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_WIFEXITED $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "WEXITSTATUS" "ac_cv_have_decl_WEXITSTATUS" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_WEXITSTATUS" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_WEXITSTATUS $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "SIGCHLD" "ac_cv_have_decl_SIGCHLD" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_SIGCHLD" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SIGCHLD $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "SIGPIPE" "ac_cv_have_decl_SIGPIPE" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_SIGPIPE" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SIGPIPE $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "SIGRTMIN" "ac_cv_have_decl_SIGRTMIN" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_SIGRTMIN" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SIGRTMIN $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "SIGTERM" "ac_cv_have_decl_SIGTERM" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_SIGTERM" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SIGTERM $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "SIGINT" "ac_cv_have_decl_SIGINT" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_SIGINT" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SIGINT $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "SIG_BLOCK" "ac_cv_have_decl_SIG_BLOCK" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_SIG_BLOCK" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SIG_BLOCK $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "SOCK_DGRAM" "ac_cv_have_decl_SOCK_DGRAM" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_SOCK_DGRAM" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SOCK_DGRAM $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "F_SETFL" "ac_cv_have_decl_F_SETFL" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_F_SETFL" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_F_SETFL $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "F_GETFL" "ac_cv_have_decl_F_GETFL" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_F_GETFL" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_F_GETFL $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "O_NONBLOCK" "ac_cv_have_decl_O_NONBLOCK" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_O_NONBLOCK" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_O_NONBLOCK $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "FD_ZERO" "ac_cv_have_decl_FD_ZERO" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_FD_ZERO" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_FD_ZERO $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "FD_SET" "ac_cv_have_decl_FD_SET" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_FD_SET" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_FD_SET $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "FD_ISSET" "ac_cv_have_decl_FD_ISSET" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_FD_ISSET" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_FD_ISSET $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "EINTR" "ac_cv_have_decl_EINTR" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_EINTR" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_EINTR $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "EAGAIN" "ac_cv_have_decl_EAGAIN" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_EAGAIN" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_EAGAIN $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "EWOULDBLOCK" "ac_cv_have_decl_EWOULDBLOCK" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_EWOULDBLOCK" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_EWOULDBLOCK $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "AI_PASSIVE" "ac_cv_have_decl_AI_PASSIVE" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_AI_PASSIVE" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_AI_PASSIVE $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "SOL_IP" "ac_cv_have_decl_SOL_IP" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_SOL_IP" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SOL_IP $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "SO_ORIGINAL_DST" "ac_cv_have_decl_SO_ORIGINAL_DST" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_SO_ORIGINAL_DST" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SO_ORIGINAL_DST $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "AF_INET" "ac_cv_have_decl_AF_INET" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_AF_INET" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_AF_INET $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "INET_ADDRSTRLEN" "ac_cv_have_decl_INET_ADDRSTRLEN" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_INET_ADDRSTRLEN" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_INET_ADDRSTRLEN $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "INET6_ADDRSTRLEN" "ac_cv_have_decl_INET6_ADDRSTRLEN" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_INET6_ADDRSTRLEN" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_INET6_ADDRSTRLEN $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "AF_INET6" "ac_cv_have_decl_AF_INET6" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_AF_INET6" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_AF_INET6 $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "SOCK_STREAM" "ac_cv_have_decl_SOCK_STREAM" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_SOCK_STREAM" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SOCK_STREAM $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "EFAULT" "ac_cv_have_decl_EFAULT" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_EFAULT" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_EFAULT $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+ac_fn_c_check_decl "$LINENO" "INADDR_LOOPBACK" "ac_cv_have_decl_INADDR_LOOPBACK" "#include<stddef.h>
+#include<limits.h>
+#include<signal.h>
+#include<fcntl.h>
+#include<errno.h>
+#include<sys/wait.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<linux/netfilter_ipv4.h>
+
+"
+if test "x$ac_cv_have_decl_INADDR_LOOPBACK" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_INADDR_LOOPBACK $ac_have_decl
+_ACEOF
+if test $ac_have_decl = 1; then :
+
+else
+  as_fn_error $? "Symbol required but not found. Should be included in libc, check the libc variant installed in your system." "$LINENO" 5
+fi
+
+
+# Pthread library checks
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for pthread_create in -lpthread" >&5
+$as_echo_n "checking for pthread_create in -lpthread... " >&6; }
+if ${ac_cv_lib_pthread_pthread_create+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpthread  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char pthread_create ();
+int
+main ()
+{
+return pthread_create ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_pthread_pthread_create=yes
+else
+  ac_cv_lib_pthread_pthread_create=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pthread_pthread_create" >&5
+$as_echo "$ac_cv_lib_pthread_pthread_create" >&6; }
+if test "x$ac_cv_lib_pthread_pthread_create" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBPTHREAD 1
+_ACEOF
+
+  LIBS="-lpthread $LIBS"
+
+else
+  as_fn_error $? "-lpthread is required but not found. Installed by default in all distributions" "$LINENO" 5
+fi
+
+
+for ac_func in pthread_create \
+pthread_join \
+pthread_mutex_init \
+pthread_mutex_lock \
+pthread_mutex_unlock \
+pthread_mutex_destroy \
+pthread_kill \
+pthread_sigmask
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "${ac_func} required but not found. Function provided by libpthread, installed by default in all distributions" "$LINENO" 5
+
+fi
+done
 
 
 # Make Makefile

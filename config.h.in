@@ -1,5 +1,89 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the `accept' function. */
+#undef HAVE_ACCEPT
+
+/* Define to 1 if you have the <arpa/inet.h> header file. */
+#undef HAVE_ARPA_INET_H
+
+/* Define to 1 if you have the `atoi' function. */
+#undef HAVE_ATOI
+
+/* Define to 1 if you have the `atol' function. */
+#undef HAVE_ATOL
+
+/* Define to 1 if you have the `bind' function. */
+#undef HAVE_BIND
+
+/* Define to 1 if you have the `calloc' function. */
+#undef HAVE_CALLOC
+
+/* Define to 1 if you have the `close' function. */
+#undef HAVE_CLOSE
+
+/* Define to 1 if you have the `connect' function. */
+#undef HAVE_CONNECT
+
+/* Define to 1 if you have the declaration of `AF_INET', and to 0 if you
+   don't. */
+#undef HAVE_DECL_AF_INET
+
+/* Define to 1 if you have the declaration of `AF_INET6', and to 0 if you
+   don't. */
+#undef HAVE_DECL_AF_INET6
+
+/* Define to 1 if you have the declaration of `AI_PASSIVE', and to 0 if you
+   don't. */
+#undef HAVE_DECL_AI_PASSIVE
+
+/* Define to 1 if you have the declaration of `EAGAIN', and to 0 if you don't.
+   */
+#undef HAVE_DECL_EAGAIN
+
+/* Define to 1 if you have the declaration of `EFAULT', and to 0 if you don't.
+   */
+#undef HAVE_DECL_EFAULT
+
+/* Define to 1 if you have the declaration of `EINTR', and to 0 if you don't.
+   */
+#undef HAVE_DECL_EINTR
+
+/* Define to 1 if you have the declaration of `EWOULDBLOCK', and to 0 if you
+   don't. */
+#undef HAVE_DECL_EWOULDBLOCK
+
+/* Define to 1 if you have the declaration of `FD_ISSET', and to 0 if you
+   don't. */
+#undef HAVE_DECL_FD_ISSET
+
+/* Define to 1 if you have the declaration of `FD_SET', and to 0 if you don't.
+   */
+#undef HAVE_DECL_FD_SET
+
+/* Define to 1 if you have the declaration of `FD_ZERO', and to 0 if you
+   don't. */
+#undef HAVE_DECL_FD_ZERO
+
+/* Define to 1 if you have the declaration of `F_GETFL', and to 0 if you
+   don't. */
+#undef HAVE_DECL_F_GETFL
+
+/* Define to 1 if you have the declaration of `F_SETFL', and to 0 if you
+   don't. */
+#undef HAVE_DECL_F_SETFL
+
+/* Define to 1 if you have the declaration of `INADDR_LOOPBACK', and to 0 if
+   you don't. */
+#undef HAVE_DECL_INADDR_LOOPBACK
+
+/* Define to 1 if you have the declaration of `INET6_ADDRSTRLEN', and to 0 if
+   you don't. */
+#undef HAVE_DECL_INET6_ADDRSTRLEN
+
+/* Define to 1 if you have the declaration of `INET_ADDRSTRLEN', and to 0 if
+   you don't. */
+#undef HAVE_DECL_INET_ADDRSTRLEN
+
 /* Define to 1 if you have the declaration of `LONG_MAX', and to 0 if you
    don't. */
 #undef HAVE_DECL_LONG_MAX
@@ -8,18 +92,210 @@
    */
 #undef HAVE_DECL_NULL
 
+/* Define to 1 if you have the declaration of `O_NONBLOCK', and to 0 if you
+   don't. */
+#undef HAVE_DECL_O_NONBLOCK
+
+/* Define to 1 if you have the declaration of `SIGCHLD', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SIGCHLD
+
+/* Define to 1 if you have the declaration of `SIGINT', and to 0 if you don't.
+   */
+#undef HAVE_DECL_SIGINT
+
+/* Define to 1 if you have the declaration of `SIGPIPE', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SIGPIPE
+
+/* Define to 1 if you have the declaration of `SIGRTMIN', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SIGRTMIN
+
+/* Define to 1 if you have the declaration of `SIGTERM', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SIGTERM
+
+/* Define to 1 if you have the declaration of `SIG_BLOCK', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SIG_BLOCK
+
+/* Define to 1 if you have the declaration of `SOCK_DGRAM', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SOCK_DGRAM
+
+/* Define to 1 if you have the declaration of `SOCK_STREAM', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SOCK_STREAM
+
+/* Define to 1 if you have the declaration of `SOL_IP', and to 0 if you don't.
+   */
+#undef HAVE_DECL_SOL_IP
+
+/* Define to 1 if you have the declaration of `SO_ORIGINAL_DST', and to 0 if
+   you don't. */
+#undef HAVE_DECL_SO_ORIGINAL_DST
+
+/* Define to 1 if you have the declaration of `WEXITSTATUS', and to 0 if you
+   don't. */
+#undef HAVE_DECL_WEXITSTATUS
+
+/* Define to 1 if you have the declaration of `WIFEXITED', and to 0 if you
+   don't. */
+#undef HAVE_DECL_WIFEXITED
+
+/* Define to 1 if you have the <errno.h> header file. */
+#undef HAVE_ERRNO_H
+
+/* Define to 1 if you have the `execlp' function. */
+#undef HAVE_EXECLP
+
+/* Define to 1 if you have the `exit' function. */
+#undef HAVE_EXIT
+
+/* Define to 1 if you have the `fcntl' function. */
+#undef HAVE_FCNTL
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define to 1 if you have the `fopen' function. */
+#undef HAVE_FOPEN
+
+/* Define to 1 if you have the `fork' function. */
+#undef HAVE_FORK
+
+/* Define to 1 if you have the `free' function. */
+#undef HAVE_FREE
+
+/* Define to 1 if you have the `getaddrinfo' function. */
+#undef HAVE_GETADDRINFO
+
+/* Define to 1 if you have the `getsockname' function. */
+#undef HAVE_GETSOCKNAME
+
+/* Define to 1 if you have the `getsockopt' function. */
+#undef HAVE_GETSOCKOPT
+
+/* Define to 1 if you have the `htonl' function. */
+#undef HAVE_HTONL
+
+/* Define to 1 if you have the `htons' function. */
+#undef HAVE_HTONS
+
+/* Define to 1 if you have the `inet_ntop' function. */
+#undef HAVE_INET_NTOP
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if your system has a GNU libc compatible `malloc' function, and
-   to 0 otherwise. */
+/* Define to 1 if you have the `pthread' library (-lpthread). */
+#undef HAVE_LIBPTHREAD
+
+/* Define to 1 if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
+
+/* Define to 1 if you have the <linux/netfilter_ipv4.h> header file. */
+#undef HAVE_LINUX_NETFILTER_IPV4_H
+
+/* Define to 1 if you have the `listen' function. */
+#undef HAVE_LISTEN
+
+/* Define to 1 if you have the `malloc' function. */
 #undef HAVE_MALLOC
+
+/* Define to 1 if you have the `memcpy' function. */
+#undef HAVE_MEMCPY
+
+/* Define to 1 if you have the `memmem' function. */
+#undef HAVE_MEMMEM
+
+/* Define to 1 if you have the `memndup' function. */
+#undef HAVE_MEMNDUP
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* Define to 1 if you have the `memset' function. */
+#undef HAVE_MEMSET
+
+/* Define to 1 if you have the <netdb.h> header file. */
+#undef HAVE_NETDB_H
+
+/* Define to 1 if you have the <netinet/in.h> header file. */
+#undef HAVE_NETINET_IN_H
+
+/* Define to 1 if you have the <netinet/tcp.h> header file. */
+#undef HAVE_NETINET_TCP_H
+
 /* Define to 1 if you have the `printf' function. */
 #undef HAVE_PRINTF
+
+/* Define to 1 if you have the `pthread_create' function. */
+#undef HAVE_PTHREAD_CREATE
+
+/* Define to 1 if you have the `pthread_join' function. */
+#undef HAVE_PTHREAD_JOIN
+
+/* Define to 1 if you have the `pthread_kill' function. */
+#undef HAVE_PTHREAD_KILL
+
+/* Define to 1 if you have the `pthread_mutex_destroy' function. */
+#undef HAVE_PTHREAD_MUTEX_DESTROY
+
+/* Define to 1 if you have the `pthread_mutex_init' function. */
+#undef HAVE_PTHREAD_MUTEX_INIT
+
+/* Define to 1 if you have the `pthread_mutex_lock' function. */
+#undef HAVE_PTHREAD_MUTEX_LOCK
+
+/* Define to 1 if you have the `pthread_mutex_unlock' function. */
+#undef HAVE_PTHREAD_MUTEX_UNLOCK
+
+/* Define to 1 if you have the `pthread_sigmask' function. */
+#undef HAVE_PTHREAD_SIGMASK
+
+/* Define to 1 if you have the `read' function. */
+#undef HAVE_READ
+
+/* Define to 1 if you have the `recvfrom' function. */
+#undef HAVE_RECVFROM
+
+/* Define to 1 if you have the `select' function. */
+#undef HAVE_SELECT
+
+/* Define to 1 if you have the `sendto' function. */
+#undef HAVE_SENDTO
+
+/* Define to 1 if you have the `sigaddset' function. */
+#undef HAVE_SIGADDSET
+
+/* Define to 1 if you have the `sigemptyset' function. */
+#undef HAVE_SIGEMPTYSET
+
+/* Define to 1 if you have the `signalfd' function. */
+#undef HAVE_SIGNALFD
+
+/* Define to 1 if you have the <signal.h> header file. */
+#undef HAVE_SIGNAL_H
+
+/* Define to 1 if you have the `sigwait' function. */
+#undef HAVE_SIGWAIT
+
+/* Define to 1 if you have the `snprintf' function. */
+#undef HAVE_SNPRINTF
+
+/* Define to 1 if you have the `socket' function. */
+#undef HAVE_SOCKET
+
+/* Define to 1 if you have the <stdarg.h> header file. */
+#undef HAVE_STDARG_H
+
+/* Define to 1 if you have the <stdbool.h> header file. */
+#undef HAVE_STDBOOL_H
+
+/* Define to 1 if you have the <stddef.h> header file. */
+#undef HAVE_STDDEF_H
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -30,8 +306,17 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
+/* Define to 1 if you have the `strcasecmp' function. */
+#undef HAVE_STRCASECMP
+
+/* Define to 1 if you have the `strcasestr' function. */
+#undef HAVE_STRCASESTR
+
 /* Define to 1 if you have the `strcmp' function. */
 #undef HAVE_STRCMP
+
+/* Define to 1 if you have the `strdup' function. */
+#undef HAVE_STRDUP
 
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
@@ -39,14 +324,47 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
+/* Define to 1 if you have the `strlen' function. */
+#undef HAVE_STRLEN
+
+/* Define to 1 if you have the `strncasecmp' function. */
+#undef HAVE_STRNCASECMP
+
+/* Define to 1 if you have the `strncpy' function. */
+#undef HAVE_STRNCPY
+
+/* Define to 1 if you have the `strstr' function. */
+#undef HAVE_STRSTR
+
+/* Define to 1 if you have the <sys/select.h> header file. */
+#undef HAVE_SYS_SELECT_H
+
+/* Define to 1 if you have the <sys/signalfd.h> header file. */
+#undef HAVE_SYS_SIGNALFD_H
+
+/* Define to 1 if you have the <sys/socket.h> header file. */
+#undef HAVE_SYS_SOCKET_H
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
+/* Define to 1 if you have the <sys/wait.h> header file. */
+#undef HAVE_SYS_WAIT_H
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `waitpid' function. */
+#undef HAVE_WAITPID
+
+/* Define to 1 if you have the `write' function. */
+#undef HAVE_WRITE
 
 /* Name of package */
 #undef PACKAGE
