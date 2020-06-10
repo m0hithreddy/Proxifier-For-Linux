@@ -15,7 +15,6 @@
 #include <netinet/in.h>
 #include <signal.h>
 #include <pthread.h>
-#include <stdio.h>
 
 struct in_addr* get_lo_interface_in_addr()
 {
@@ -26,11 +25,11 @@ struct in_addr* get_lo_interface_in_addr()
 	return lo_in_addr;
 }
 
-sigset_t* get_sigmask(void)
+sigset_t* get_syncmask(void)
 {
 	sigset_t* sigmask = (sigset_t*) malloc(sizeof(sigset_t));
 	sigemptyset(sigmask);
-	sigaddset(sigmask, SIGRTMIN);
+	sigaddset(sigmask, PROXY_DEFAULT_SYNC_SIGNAL);
 
 	return sigmask;
 }
@@ -118,7 +117,7 @@ int free_proxy_options(struct proxy_options** _px_opt)
 	if (px_opt->nrd_ports > 0) {
 		for (long port_count = 0; port_count < px_opt->nrd_ports; \
 		port_count++) {
-			free((px_opt->rd_ports)[port_count]);
+			free(px_opt->rd_ports[port_count]);
 		}
 
 		free(px_opt->rd_ports);
@@ -200,7 +199,7 @@ struct proxy_request* create_proxy_request(struct proxy_handler* px_handler)
 
 	/* Thread Variables */
 
-	px_request->ptid = pthread_self();
+	px_request->ptid = px_handler->tid;
 
 	/* Variables for Synchronization */
 
