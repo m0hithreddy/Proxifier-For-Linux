@@ -9,7 +9,6 @@
 #include "proxy.h"
 #include <stdint.h>
 #include <string.h>
-#include <netinet/in.h>
 
 int set_bit(void* bit_array, unsigned long bit_pos)
 {
