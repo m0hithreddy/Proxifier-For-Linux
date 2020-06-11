@@ -8,7 +8,12 @@
 #ifndef SRC_PROXY_HTTP_H_
 #define SRC_PROXY_HTTP_H_
 
-#define PROXY_DEFAULT_HTTP_USER_AGENT "PROXIFIER/1.0"
+#ifndef SRC_CONFIG_H_
+#define SRC_CONFIG_H_
+#include "config.h"
+#endif
+
+#define PROXY_DEFAULT_HTTP_USER_AGENT PACKAGE_NAME"/"PACKAGE_VERSION
 #define PROXY_DEFAULT_HTTP_PROXY_AUTHORIZATION_SCHEME "basic"
 
 #include "proxy.h"

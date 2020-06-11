@@ -14,6 +14,11 @@
 #include <stdarg.h>
 #include <limits.h>
 
+#ifndef SRC_CONFIG_H_
+#define SRC_CONFIG_H_
+#include "config.h"
+#endif
+
 char* strlocate(char* haystack, char* needle, long haystack_start, long haystack_end)
 {
 	if (haystack == NULL || needle == NULL || haystack_start < 0 || \
