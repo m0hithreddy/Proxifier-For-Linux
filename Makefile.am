@@ -6,6 +6,10 @@ EXTRA_DIST= \
 			proxifier.conf \
 			README.md
 
+clean-local:
+	rm -f service/*.service
+	rm -f doc/*.1
+	
 distclean-local:
 	rm -rf  *.m4
 	rm -rf *.in~
@@ -18,3 +22,7 @@ include src/Makefile.am
 include service/Makefile.am
 
 sysconf_DATA = proxifier.conf 
+
+if TXT2MAN
+include doc/Makefile.am
+endif

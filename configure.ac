@@ -51,6 +51,16 @@ AC_PROG_INSTALL
 
 AC_PROG_SED
 
+AC_PROG_MKDIR_P
+
+AC_CHECK_PROG([TXT2MAN],[txt2man],[yes])
+
+if test "x${TXT2MAN}" != "xyes" ; then
+AC_MSG_NOTICE([txt2man not found, no support for building man pages])
+fi
+
+AM_CONDITIONAL([TXT2MAN], [test "x${TXT2MAN}" = "xyes"])
+
 # Some predefined header checks
 
 AC_FUNC_MALLOC
@@ -206,6 +216,13 @@ pthread_kill \
 pthread_sigmask],
 [],
 [AC_MSG_ERROR([${ac_func} required but not found. Function provided by libpthread, installed by default in all distributions])]
+)
+
+AC_CHECK_DECLS(
+[PTHREAD_MUTEX_INITIALIZER],
+[],
+[AC_MSG_ERROR([Symbol required but not found. Should be included in libpthread])],
+[[#include<pthread.h>]]
 )
 
 # Make Makefile 

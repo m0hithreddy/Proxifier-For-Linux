@@ -1,0 +1,50 @@
+NAME
+ proxifier - Proxifier For Linux
+
+SYNOPSIS
+ systemctl {start| stop| restart| status}  proxifier[.service]
+
+DESCRIPTION
+ proxifier acts as an intermediate between the proxy servers and client programs. Not all programs are capable of working through proxy servers. 
+ Moreover, it is tiresome to configure proxy settings for each application. proxifier aims to solve these two issues, work through the proxy servers on behalf of 
+ the other programs, and a global point for configuring proxy rules, which will be applied to every program in the system. 
+
+ proxifier supports HTTP_PROXY.
+
+OPTIONS
+ proxifier is intended to run as a system service, see the CONFIGURATION FILE section for configuring proxifier.
+ 
+CONFIGURATION FILE
+ proxifier provides the service by registering the proxy_handler threads. For each proxy_block in the configuration file, a proxy_handler thread is registered. 
+ Taking advantage of it, one can configure multiple proxy_blocks (or proxy servers) for dealing with a specific destination port traffic. See the file /usr/local/etc/proxifier.conf
+ for a template proxy_block.
+ 
+NOTE
+ In the HTTP_PROXY environment, the network administrator need not configure a DNS resolver. The proxy server resolves, and establishes a tunnel or fetches the content on 
+ behalf of the client. But since we are masking away the details of the proxy environment, the client programs attempt for DNS resolution. As of now, the proxifier is unable 
+ to deal with this (work in progress). So a configured DNS resolver is expected for the smooth operation of proxifier.
+
+EXAMPLES
+ Start the proxifier service
+ 	
+ 	# systemctl start proxifier
+
+ Stop the proxifier service
+ 	
+ 	# systemctl stop proxifier
+
+ Reload the configuration files
+ 	
+ 	# systemctl restart proxifier
+ 	
+FILES
+ /usr/local/etc/proxifier.conf - System-wide configuration file.
+ 
+ /usr/local/lib/systemd/system/proxifier.service - Proxifier service file.
+ 
+ /usr/local/bin/proxifier - Proxifier executable
+ 
+COPYRIGHT
+ proxifier was originally written by Mohith Reddy. Please, see the AUTHORS and ChangeLog files.
+
+ The project homepage is { https://github.com/m0hithreddy/Proxifier-For-Linux }

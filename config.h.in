@@ -96,6 +96,10 @@
    don't. */
 #undef HAVE_DECL_O_NONBLOCK
 
+/* Define to 1 if you have the declaration of `PTHREAD_MUTEX_INITIALIZER', and
+   to 0 if you don't. */
+#undef HAVE_DECL_PTHREAD_MUTEX_INITIALIZER
+
 /* Define to 1 if you have the declaration of `SIGCHLD', and to 0 if you
    don't. */
 #undef HAVE_DECL_SIGCHLD

@@ -101,8 +101,8 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(sysconfdir)" \
-	"$(DESTDIR)$(systemdsysdir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" \
+	"$(DESTDIR)$(sysconfdir)" "$(DESTDIR)$(systemdsysdir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_proxifier_OBJECTS = src/proxifier.$(OBJEXT) src/proxy.$(OBJEXT) \
@@ -182,6 +182,9 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
+man1dir = $(mandir)/man1
+NROFF = nroff
+MANS = $(dist_man_MANS)
 DATA = $(sysconf_DATA) $(systemdsys_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \
 	$(LISP)config.h.in
@@ -205,7 +208,8 @@ ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
 AM_RECURSIVE_TARGETS = cscope
-am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
+am__DIST_COMMON = $(dist_man_MANS) $(srcdir)/Makefile.in \
+	$(srcdir)/config.h.in $(srcdir)/doc/Makefile.am \
 	$(srcdir)/service/Makefile.am $(srcdir)/src/Makefile.am \
 	$(top_srcdir)/build-aux/compile \
 	$(top_srcdir)/build-aux/depcomp \
@@ -275,6 +279,7 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+TXT2MAN = @TXT2MAN@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -359,14 +364,16 @@ AM_CFLAGS = -I$(abs_srcdir)/src -I$(abs_srcdir)
 systemdsysdir = $(libdir)/systemd/system
 systemdsys_DATA = service/proxifier.service
 sysconf_DATA = proxifier.conf 
+@TXT2MAN_TRUE@dist_man_MANS = doc/proxifier.1
+@TXT2MAN_TRUE@PACKAGE_DESC = Proxifier-For-Linux
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: ._service .c .o .obj .service
+.SUFFIXES: .1 ._service .c .o .obj .service .txt
 am--refresh: Makefile
 	@:
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(srcdir)/src/Makefile.am $(srcdir)/service/Makefile.am $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(srcdir)/src/Makefile.am $(srcdir)/service/Makefile.am $(srcdir)/doc/Makefile.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -388,7 +395,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__maybe_remake_depfiles)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__maybe_remake_depfiles);; \
 	esac;
-$(srcdir)/src/Makefile.am $(srcdir)/service/Makefile.am $(am__empty):
+$(srcdir)/src/Makefile.am $(srcdir)/service/Makefile.am $(srcdir)/doc/Makefile.am $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
@@ -530,6 +537,49 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+install-man1: $(dist_man_MANS)
+	@$(NORMAL_INSTALL)
+	@list1=''; \
+	list2='$(dist_man_MANS)'; \
+	test -n "$(man1dir)" \
+	  && test -n "`echo $$list1$$list2`" \
+	  || exit 0; \
+	echo " $(MKDIR_P) '$(DESTDIR)$(man1dir)'"; \
+	$(MKDIR_P) "$(DESTDIR)$(man1dir)" || exit 1; \
+	{ for i in $$list1; do echo "$$i"; done;  \
+	if test -n "$$list2"; then \
+	  for i in $$list2; do echo "$$i"; done \
+	    | sed -n '/\.1[a-z]*$$/p'; \
+	fi; \
+	} | while read p; do \
+	  if test -f $$p; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; echo "$$p"; \
+	done | \
+	sed -e 'n;s,.*/,,;p;h;s,.*\.,,;s,^[^1][0-9a-z]*$$,1,;x' \
+	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,' | \
+	sed 'N;N;s,\n, ,g' | { \
+	list=; while read file base inst; do \
+	  if test "$$base" = "$$inst"; then list="$$list $$file"; else \
+	    echo " $(INSTALL_DATA) '$$file' '$(DESTDIR)$(man1dir)/$$inst'"; \
+	    $(INSTALL_DATA) "$$file" "$(DESTDIR)$(man1dir)/$$inst" || exit $$?; \
+	  fi; \
+	done; \
+	for i in $$list; do echo "$$i"; done | $(am__base_list) | \
+	while read files; do \
+	  test -z "$$files" || { \
+	    echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(man1dir)'"; \
+	    $(INSTALL_DATA) $$files "$(DESTDIR)$(man1dir)" || exit $$?; }; \
+	done; }
+
+uninstall-man1:
+	@$(NORMAL_UNINSTALL)
+	@list=''; test -n "$(man1dir)" || exit 0; \
+	files=`{ for i in $$list; do echo "$$i"; done; \
+	l2='$(dist_man_MANS)'; for i in $$l2; do echo "$$i"; done | \
+	  sed -n '/\.1[a-z]*$$/p'; \
+	} | sed -e 's,.*/,,;h;s,.*\.,,;s,^[^1][0-9a-z]*$$,1,;x' \
+	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,'`; \
+	dir='$(DESTDIR)$(man1dir)'; $(am__uninstall_files_from_dir)
 install-sysconfDATA: $(sysconf_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(sysconf_DATA)'; test -n "$(sysconfdir)" || list=; \
@@ -800,9 +850,9 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS) $(DATA) config.h
+all-am: Makefile $(PROGRAMS) $(MANS) $(DATA) config.h
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(sysconfdir)" "$(DESTDIR)$(systemdsysdir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(sysconfdir)" "$(DESTDIR)$(systemdsysdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -872,7 +922,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-systemdsysDATA
+install-data-am: install-man install-systemdsysDATA
 
 install-dvi: install-dvi-am
 
@@ -888,7 +938,7 @@ install-info: install-info-am
 
 install-info-am:
 
-install-man:
+install-man: install-man1
 
 install-pdf: install-pdf-am
 
@@ -931,8 +981,10 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-sysconfDATA \
-	uninstall-systemdsysDATA
+uninstall-am: uninstall-binPROGRAMS uninstall-man \
+	uninstall-sysconfDATA uninstall-systemdsysDATA
+
+uninstall-man: uninstall-man1
 
 .MAKE: all install-am install-strip
 
@@ -946,17 +998,21 @@ uninstall-am: uninstall-binPROGRAMS uninstall-sysconfDATA \
 	html-am info info-am install install-am install-binPROGRAMS \
 	install-data install-data-am install-dvi install-dvi-am \
 	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	install-sysconfDATA install-systemdsysDATA installcheck \
-	installcheck-am installdirs maintainer-clean \
+	install-info install-info-am install-man install-man1 \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip install-sysconfDATA install-systemdsysDATA \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-sysconfDATA \
-	uninstall-systemdsysDATA
+	uninstall-am uninstall-binPROGRAMS uninstall-man \
+	uninstall-man1 uninstall-sysconfDATA uninstall-systemdsysDATA
 
 .PRECIOUS: Makefile
 
+
+clean-local:
+	rm -f service/*.service
+	rm -f doc/*.1
 
 distclean-local:
 	rm -rf  *.m4
@@ -965,11 +1021,17 @@ distclean-local:
 
 re-install: uninstall install
 
-clean-local:
-	rm -f service/*.service
-
 ._service.service:
 	$(SED) "s|BINDIR|$(DESTDIR)$(bindir)|g" $< > $@
+
+@TXT2MAN_TRUE@.txt.1:
+@TXT2MAN_TRUE@	$$(txt2man \
+@TXT2MAN_TRUE@		   -t $$(echo $$(echo $< | sed 's/.txt.*//').1) \
+@TXT2MAN_TRUE@		   -v ${PACKAGE_NAME}-${PACKAGE_VERSION} \
+@TXT2MAN_TRUE@		   -s 1 \
+@TXT2MAN_TRUE@		   -P ${PACKAGE_NAME} \
+@TXT2MAN_TRUE@		   -v ${PACKAGE_DESC} \
+@TXT2MAN_TRUE@		   $< > $$(echo $$(echo $< | sed 's/.txt.*//').1))
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
