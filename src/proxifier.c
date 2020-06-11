@@ -14,9 +14,16 @@
 #include <signal.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 int main(int argc, char** argv)
 {
+
+	if (getuid() != 0 && geteuid() != 0) {
+		exit(0);
+	}
+
 	/* Block SIGPIPE, SIGRTMIN, SIGCHLD, SIGTERM */
 
 	sigset_t sigmask;
