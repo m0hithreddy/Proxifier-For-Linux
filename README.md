@@ -29,20 +29,6 @@ Obtain the latest stable Proxifier sources by cloning from GitHub mirror
 
     $ git clone https://github.com/m0hithreddy/Proxifier-For-Linux.git && cd Proxifier-For-Linux
 
-Also, you can fetch the archive of the master branch or particular release as follows
-
-* Master Branch
-
-        $ wget https://github.com/m0hithreddy/Proxifier-For-Linux/archive/master.zip && unzip master.zip && cd Proxifier-For-Linux-master
-    
-* Zip archive of a particular release
-        
-        $ wget https://github.com/m0hithreddy/Proxifier-For-Linux/archive/vx.y.zip && unzip vx.y.zip && cd Proxifier-For-Linux-x.y
-
-* Gzipped Tar archive of a particular release
-        
-        $ wget https://github.com/m0hithreddy/Proxifier-For-Linux/archive/vx.y.tar.gz && tar -xvf vx.y.tar.gz && cd Proxifier-For-Linux-x.y
-
 ## Build and Install
 
 After installing dependencies, obtaining Proxifier sources, and changing to the source directory:
@@ -51,15 +37,15 @@ After installing dependencies, obtaining Proxifier sources, and changing to the 
 
         $ ./configure
         $ make all
-        $ make install
+        $ sudo make install
 
 * Clean Installation
 
         $ autoreconf -vfi
         $ ./configure
         $ make all
-        $ make uninstall
-        $ make install
+        $ sudo make uninstall
+        $ sudo make install
 
 ## Usage
 Proxifier service can be enabled as follows:
