@@ -1,0 +1,2 @@
+* Remove the redundant DNS snippets.
+* Clear the memory allocated on the heap to prevent the memory-hogging over time.
