@@ -8,7 +8,6 @@
 #include "proxifier.h"
 #include "proxy.h"
 #include "proxy_http.h"
-#include "proxy_dns.h"
 #include "proxy_structures.h"
 #include "proxy_configuration.h"
 #include <signal.h>
@@ -59,12 +58,6 @@ int main(int argc, char** argv)
 
 		if (px_handler->protocol == PROXY_PROTOCOL_HTTP) {
 			if (pthread_create(&px_handler->tid, NULL, http_proxy_init, px_handler) != 0)
-				goto delete_next;
-			else
-				goto normal_next;
-		}
-		else if (px_handler->protocol == PROXY_PROTOCOL_DNS) {
-			if (pthread_create(&px_handler->tid, NULL, dns_proxy_init, px_handler) != 0)
 				goto delete_next;
 			else
 				goto normal_next;

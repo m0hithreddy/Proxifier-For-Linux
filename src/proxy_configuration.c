@@ -10,7 +10,6 @@
 #include "proxy_functions.h"
 #include "proxy.h"
 #include "proxy_http.h"
-#include "proxy_dns.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -318,10 +317,6 @@ int validate_proxy_handler(struct proxy_handler* px_handler)
 
 	if (px_handler->protocol == PROXY_PROTOCOL_HTTP) {
 		if (validate_http_proxy_handler(px_handler) != PROXY_ERROR_NONE)
-			return PROXY_ERROR_INVAL;
-	}
-	else if (px_handler->protocol == PROXY_PROTOCOL_DNS) {
-		if (validate_dns_proxy_handler(px_handler) != PROXY_ERROR_NONE)
 			return PROXY_ERROR_INVAL;
 	}
 	else

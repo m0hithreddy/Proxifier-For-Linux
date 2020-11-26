@@ -108,9 +108,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 am_proxifier_OBJECTS = src/proxifier.$(OBJEXT) src/proxy.$(OBJEXT) \
 	src/proxy_http.$(OBJEXT) src/proxy_socket.$(OBJEXT) \
 	src/proxy_structures.$(OBJEXT) src/proxy_functions.$(OBJEXT) \
-	src/proxy_configuration.$(OBJEXT) src/proxy_dns.$(OBJEXT) \
-	src/http.$(OBJEXT) src/dns.$(OBJEXT) src/base64.$(OBJEXT) \
-	src/firewall.$(OBJEXT) src/bit.$(OBJEXT)
+	src/proxy_configuration.$(OBJEXT) src/http.$(OBJEXT) \
+	src/base64.$(OBJEXT) src/firewall.$(OBJEXT) src/bit.$(OBJEXT)
 proxifier_OBJECTS = $(am_proxifier_OBJECTS)
 proxifier_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -129,11 +128,11 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = src/$(DEPDIR)/base64.Po src/$(DEPDIR)/bit.Po \
-	src/$(DEPDIR)/dns.Po src/$(DEPDIR)/firewall.Po \
-	src/$(DEPDIR)/http.Po src/$(DEPDIR)/proxifier.Po \
-	src/$(DEPDIR)/proxy.Po src/$(DEPDIR)/proxy_configuration.Po \
-	src/$(DEPDIR)/proxy_dns.Po src/$(DEPDIR)/proxy_functions.Po \
-	src/$(DEPDIR)/proxy_http.Po src/$(DEPDIR)/proxy_socket.Po \
+	src/$(DEPDIR)/firewall.Po src/$(DEPDIR)/http.Po \
+	src/$(DEPDIR)/proxifier.Po src/$(DEPDIR)/proxy.Po \
+	src/$(DEPDIR)/proxy_configuration.Po \
+	src/$(DEPDIR)/proxy_functions.Po src/$(DEPDIR)/proxy_http.Po \
+	src/$(DEPDIR)/proxy_socket.Po \
 	src/$(DEPDIR)/proxy_structures.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -214,7 +213,7 @@ am__DIST_COMMON = $(dist_man_MANS) $(srcdir)/Makefile.in \
 	$(top_srcdir)/build-aux/compile \
 	$(top_srcdir)/build-aux/depcomp \
 	$(top_srcdir)/build-aux/install-sh \
-	$(top_srcdir)/build-aux/missing COPYING INSTALL \
+	$(top_srcdir)/build-aux/missing COPYING INSTALL TODO \
 	build-aux/compile build-aux/depcomp build-aux/install-sh \
 	build-aux/missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -346,11 +345,7 @@ src/proxy_functions.c \
 src/proxy_functions.h \
 src/proxy_configuration.c \
 src/proxy_configuration.h \
-src/proxy_dns.c \
-src/proxy_dns.h \
 src/http.c \
-src/dns.c \
-src/dns.h \
 src/http.h \
 src/base64.c \
 src/base64.h \
@@ -481,10 +476,7 @@ src/proxy_functions.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/proxy_configuration.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
-src/proxy_dns.$(OBJEXT): src/$(am__dirstamp) \
-	src/$(DEPDIR)/$(am__dirstamp)
 src/http.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
-src/dns.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/base64.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/firewall.$(OBJEXT): src/$(am__dirstamp) \
@@ -504,13 +496,11 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/base64.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/bit.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/dns.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/firewall.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/http.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxifier.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_configuration.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_dns.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_functions.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_http.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxy_socket.Po@am__quote@ # am--include-marker
@@ -895,13 +885,11 @@ distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 		-rm -f src/$(DEPDIR)/base64.Po
 	-rm -f src/$(DEPDIR)/bit.Po
-	-rm -f src/$(DEPDIR)/dns.Po
 	-rm -f src/$(DEPDIR)/firewall.Po
 	-rm -f src/$(DEPDIR)/http.Po
 	-rm -f src/$(DEPDIR)/proxifier.Po
 	-rm -f src/$(DEPDIR)/proxy.Po
 	-rm -f src/$(DEPDIR)/proxy_configuration.Po
-	-rm -f src/$(DEPDIR)/proxy_dns.Po
 	-rm -f src/$(DEPDIR)/proxy_functions.Po
 	-rm -f src/$(DEPDIR)/proxy_http.Po
 	-rm -f src/$(DEPDIR)/proxy_socket.Po
@@ -955,13 +943,11 @@ maintainer-clean: maintainer-clean-am
 	-rm -rf $(top_srcdir)/autom4te.cache
 		-rm -f src/$(DEPDIR)/base64.Po
 	-rm -f src/$(DEPDIR)/bit.Po
-	-rm -f src/$(DEPDIR)/dns.Po
 	-rm -f src/$(DEPDIR)/firewall.Po
 	-rm -f src/$(DEPDIR)/http.Po
 	-rm -f src/$(DEPDIR)/proxifier.Po
 	-rm -f src/$(DEPDIR)/proxy.Po
 	-rm -f src/$(DEPDIR)/proxy_configuration.Po
-	-rm -f src/$(DEPDIR)/proxy_dns.Po
 	-rm -f src/$(DEPDIR)/proxy_functions.Po
 	-rm -f src/$(DEPDIR)/proxy_http.Po
 	-rm -f src/$(DEPDIR)/proxy_socket.Po

@@ -15,11 +15,7 @@ src/proxy_functions.c \
 src/proxy_functions.h \
 src/proxy_configuration.c \
 src/proxy_configuration.h \
-src/proxy_dns.c \
-src/proxy_dns.h \
 src/http.c \
-src/dns.c \
-src/dns.h \
 src/http.h \
 src/base64.c \
 src/base64.h \

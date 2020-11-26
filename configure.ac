@@ -26,12 +26,8 @@ ${srcdir}/src/proxy_functions.c
 ${srcdir}/src/proxy_functions.h
 ${srcdir}/src/proxy_configuration.c
 ${srcdir}/src/proxy_configuration.h
-${srcdir}/src/proxy_dns.c
-${srcdir}/src/proxy_dns.h
 ${srcdir}/src/http.c
 ${srcdir}/src/http.h
-${srcdir}/src/dns.c
-${srcdir}/src/dns.h
 ${srcdir}/src/bit.c
 ${srcdir}/src/bit.h
 ${srcdir}/src/base64.c
