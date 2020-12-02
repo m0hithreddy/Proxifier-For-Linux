@@ -50,6 +50,8 @@ char* strcaselocate(char* haystack, char* needle, long haystack_start, long hays
 
 	char* hs_needle = strcasestr(sub_haystack, needle);
 
+	free(sub_haystack);
+
 	if (hs_needle == NULL)
 		return NULL;
 
@@ -86,10 +88,13 @@ struct proxy_data* sseek(struct proxy_data* px_data, char* seq_str, long max_see
 
 	/* Send a proxy_data{} update */
 
-	struct proxy_data *px_update = (struct proxy_data*) malloc(sizeof(struct proxy_data));
+	struct proxy_data *px_update = create_proxy_data(px_data->size - seek_count);
 
-	px_update->data = px_data->data + seek_count;
-	px_update->size = px_data->size - seek_count;
+	if (px_update != NULL)
+		memcpy(px_update->data, px_data->data + seek_count, px_update->size);
+
+	if (ss_flags & PROXY_MODE_FREE_INPUT)
+		free_proxy_data(&px_data);
 
 	return px_update;
 }
@@ -133,20 +138,25 @@ struct proxy_data* scopy(struct proxy_data* px_data, char* seq_str, char** sc_re
 	else
 		*sc_result = NULL;
 
+	free_proxy_bag(&copy_bag);
+
 	/* Make a proxy_data{} update */
 
-	struct proxy_data* px_update = (struct proxy_data*) malloc(sizeof(struct proxy_data));
+	struct proxy_data* px_update = create_proxy_data(px_data->size - copy_count);
 
-	px_update->data = px_data->data + copy_count;
-	px_update->size = px_data->size - copy_count;
+	if (px_update != NULL)
+		memcpy(px_update->data, px_data->data + copy_count, px_update->size);
+
+	if (sc_flags & PROXY_MODE_FREE_INPUT)
+		free_proxy_data(&px_data);
 
 	/* If caller requested for any seeking operation */
 
 	if (sc_flags & PROXY_MODE_SCOPY_SSEEK_DELIMIT)
-		px_update = sseek(px_update, seq_str, LONG_MAX, PROXY_MODE_DELIMIT);
+		px_update = sseek(px_update, seq_str, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_FREE_INPUT);
 
 	if (sc_flags & PROXY_MODE_SCOPY_SSEEK_PERMIT)
-		px_update = sseek(px_update, seq_str, LONG_MAX, PROXY_MODE_PERMIT);
+		px_update = sseek(px_update, seq_str, LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 	return px_update;
 }
