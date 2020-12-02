@@ -30,6 +30,7 @@ struct proxy_data* create_http_request(struct http_request* s_request)
 	rqst_data.size = strlen((char*) rqst_data.data);
 
 	place_proxy_data(rqst_bag, &rqst_data);
+	free(rqst_data.data);
 
 	/* Append Path */
 
@@ -38,6 +39,7 @@ struct proxy_data* create_http_request(struct http_request* s_request)
 	rqst_data.size = strlen((char*) rqst_data.data);
 
 	place_proxy_data(rqst_bag, &rqst_data);
+	free(rqst_data.data);
 
 	/* Append HTTP version string */
 
@@ -46,20 +48,20 @@ struct proxy_data* create_http_request(struct http_request* s_request)
 	rqst_data.size = strlen((char*) rqst_data.data);
 
 	place_proxy_data(rqst_bag, &rqst_data);
+	free(rqst_data.data);
 
 	/* Append the headers pointed by s_request{} if they are set */
 
-	struct proxy_data* hdrs_dict = (struct proxy_data*) malloc(sizeof(struct proxy_data));
+	struct proxy_data* hdrs_dict = create_proxy_data(strlen(HTTP_CONSTANT_REQUEST_HEADERS_MAPPING));
 
-	hdrs_dict->data = HTTP_CONSTANT_REQUEST_HEADERS_MAPPING;
-	hdrs_dict->size = strlen(hdrs_dict->data);
+	memcpy(hdrs_dict->data, (void*) HTTP_CONSTANT_REQUEST_HEADERS_MAPPING, hdrs_dict->size);
 
 	char *hdr_key = NULL, *hdr_value = NULL, *hdr_index = NULL;
 
 	for ( ; ; ) {
 		/* Seek through spaces */
 
-		hdrs_dict = sseek(hdrs_dict, " ", LONG_MAX, PROXY_MODE_PERMIT);
+		hdrs_dict = sseek(hdrs_dict, " ", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (hdrs_dict == NULL || hdrs_dict->data == NULL || hdrs_dict->size <= 0)
 			break;
@@ -68,7 +70,7 @@ struct proxy_data* create_http_request(struct http_request* s_request)
 
 		hdr_key = NULL;
 		hdrs_dict = scopy(hdrs_dict, " ", &hdr_key, LONG_MAX, PROXY_MODE_DELIMIT | \
-				PROXY_MODE_NULL_RESULT | PROXY_MODE_SCOPY_SSEEK_PERMIT);
+				PROXY_MODE_NULL_RESULT | PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (hdrs_dict == NULL || hdrs_dict->data == NULL || hdrs_dict->size <= 0 \
 				|| hdr_key == NULL)
@@ -77,7 +79,7 @@ struct proxy_data* create_http_request(struct http_request* s_request)
 		/* Read HTTP header key's index in http_request{} */
 
 		hdr_index = NULL;
-		hdrs_dict = scopy(hdrs_dict, " ", &hdr_index, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_NULL_RESULT);
+		hdrs_dict = scopy(hdrs_dict, " ", &hdr_index, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_NULL_RESULT | PROXY_MODE_FREE_INPUT);
 
 		if (hdr_index == NULL)
 			break;
@@ -95,7 +97,10 @@ struct proxy_data* create_http_request(struct http_request* s_request)
 		rqst_data.size = strlen((char*) rqst_data.data);
 
 		place_proxy_data(rqst_bag, &rqst_data);
+		free(rqst_data.data);
 	}
+
+	free_proxy_data(&hdrs_dict);
 
 	/* Append custom headers */
 
@@ -106,15 +111,17 @@ struct proxy_data* create_http_request(struct http_request* s_request)
 			rqst_data.size = strlen(rqst_data.data);
 
 			place_proxy_data(rqst_bag, &rqst_data);
+			free(rqst_data.data);
 		}
 	}
 
 	/* Append CRLF terminating sequence */
 
-	rqst_data.data = "\r\n";
+	rqst_data.data = strdup("\r\n");
 	rqst_data.size = 2;
 
 	place_proxy_data(rqst_bag, &rqst_data);
+	free(rqst_data.data);
 
 	/* Append Body */
 
@@ -146,10 +153,9 @@ struct http_request* parse_http_request(struct proxy_data* request)
 
 	/* Segregate Request Headers and Body */
 
-	struct proxy_data* hdrs_data = (struct proxy_data*) malloc(sizeof(struct proxy_data));
+	struct proxy_data* hdrs_data = create_proxy_data((long) (term_seq - (char*) request->data) + (4 * sizeof(char)));
 
-	hdrs_data->data = request->data;
-	hdrs_data->size = (long) (term_seq - (char*) request->data) + (4 * sizeof(char));
+	memcpy(hdrs_data->data, request->data, hdrs_data->size);
 
 	if (request->size - hdrs_data->size > 0) {
 		s_request->body = create_proxy_data(request->size - hdrs_data->size);
@@ -160,7 +166,7 @@ struct http_request* parse_http_request(struct proxy_data* request)
 
 	/* Seek through spaces */
 
-	hdrs_data = sseek(hdrs_data, " ", LONG_MAX, PROXY_MODE_PERMIT);
+	hdrs_data = sseek(hdrs_data, " ", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 	if (hdrs_data == NULL || hdrs_data->data == NULL || hdrs_data->size <= 0)
 		return NULL;
@@ -169,7 +175,7 @@ struct http_request* parse_http_request(struct proxy_data* request)
 
 	s_request->method = NULL;
 	hdrs_data = scopy(hdrs_data, " \r\n", &(s_request->method), LONG_MAX, PROXY_MODE_DELIMIT | \
-			PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_NULL_RESULT);
+			PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_NULL_RESULT | PROXY_MODE_FREE_INPUT);
 
 	if (hdrs_data == NULL || hdrs_data->data == NULL || hdrs_data->size <= 0 || \
 			s_request->method == NULL) {
@@ -180,7 +186,7 @@ struct http_request* parse_http_request(struct proxy_data* request)
 
 	s_request->path = NULL;
 	hdrs_data = scopy(hdrs_data, " \r\n", &(s_request->path), LONG_MAX, PROXY_MODE_DELIMIT | \
-			PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_NULL_RESULT);
+			PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_NULL_RESULT | PROXY_MODE_FREE_INPUT);
 
 	if (hdrs_data == NULL || hdrs_data->data == NULL || hdrs_data->size <= 0 || \
 			s_request->path == NULL) {
@@ -193,18 +199,18 @@ struct http_request* parse_http_request(struct proxy_data* request)
 		return NULL;
 	}
 
-	hdrs_data->data = hdrs_data->data + 5;
 	hdrs_data->size = hdrs_data->size - 5;
+	memmove(hdrs_data->data, hdrs_data->data + 5, hdrs_data->size);
 
 	s_request->version = NULL;
 	hdrs_data = scopy(hdrs_data, " \r\n", &(s_request->version), LONG_MAX, PROXY_MODE_DELIMIT | \
-			PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_NULL_RESULT);
+			PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_NULL_RESULT | PROXY_MODE_FREE_INPUT);
+
+	if (s_request->version == NULL)
+		return NULL;
 
 	if (hdrs_data == NULL || hdrs_data->data == NULL || hdrs_data->size <= 0) {
-		if (s_request->version == NULL)
-			return NULL;
-		else
-			return s_request;
+		return s_request;
 	}
 
 	/* Request Headers Extraction */
@@ -214,9 +220,9 @@ struct http_request* parse_http_request(struct proxy_data* request)
 	char *hdr_key = NULL, *hdr_value = NULL, *hdr_index = NULL;
 
 	for ( ; ; ) {
-		/* Seek through spaces "\r\n" */
+		/* Seek through spaces and \r\n */
 
-		hdrs_data = sseek(hdrs_data, " \r\n", LONG_MAX, PROXY_MODE_PERMIT);
+		hdrs_data = sseek(hdrs_data, " \r\n", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (hdrs_data == NULL || hdrs_data->data == NULL || hdrs_data->size <= 0)
 			break;
@@ -225,7 +231,7 @@ struct http_request* parse_http_request(struct proxy_data* request)
 
 		hdr_key = NULL;
 		hdrs_data = scopy(hdrs_data, " :", &hdr_key, LONG_MAX, PROXY_MODE_DELIMIT | \
-				PROXY_MODE_NULL_RESULT | PROXY_MODE_SCOPY_SSEEK_PERMIT);
+				PROXY_MODE_NULL_RESULT | PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (hdrs_data == NULL || hdrs_data->data == NULL || hdrs_data->size <= 0 || \
 				hdr_key == NULL)
@@ -233,35 +239,31 @@ struct http_request* parse_http_request(struct proxy_data* request)
 
 		/* Get request header value */
 
-		hdrs_data = scopy(hdrs_data, "\r\n", &hdr_value, LONG_MAX, PROXY_MODE_DELIMIT);
+		hdrs_data = scopy(hdrs_data, "\r\n", &hdr_value, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_FREE_INPUT);
 
 		/* Locate occurrence of hdr_key in hdrs_dict */
 
-		char* key_cmp = (char*) malloc(sizeof(char) * (strlen(hdr_key) + 3));
+		char* key_cmp = strappend(3, " ", hdr_key, " ");
 
-		key_cmp[0] = ' ';
-		memcpy(key_cmp + 1, hdr_key, strlen(hdr_key));
-		key_cmp[strlen(hdr_key) + 1] = ' ';
-		key_cmp[strlen(hdr_key) + 2] = '\0';
+		struct proxy_data* hdrs_dict = create_proxy_data(strlen(HTTP_CONSTANT_REQUEST_HEADERS_MAPPING));
 
-		struct proxy_data* hdrs_dict = (struct proxy_data*) malloc(sizeof(struct proxy_data));
+		memcpy(hdrs_dict->data, (void*) HTTP_CONSTANT_REQUEST_HEADERS_MAPPING, hdrs_dict->size);
 
-		hdrs_dict->data = HTTP_CONSTANT_REQUEST_HEADERS_MAPPING;
-		hdrs_dict->size = sizeof(char) * strlen((char*) hdrs_dict->data);
-
-		hdrs_dict->data = (void*) strcaselocate((char*) hdrs_dict->data, key_cmp, 0, hdrs_dict->size);
+		char* key_pos = strcaselocate((char*) hdrs_dict->data, key_cmp, 0, hdrs_dict->size);
 
 		/* If hdr_key found then insert in s_request{} else in s_request{}->custom_headers */
 
-		if (hdrs_dict->data != NULL) {
-			/* Recompute the hdrs_dict size */
+		if (key_pos != NULL) {
+			/* Recompute the hdrs_dict size and seek through hdrs_dict->data */
 
-			hdrs_dict->data = hdrs_dict->data + sizeof(char) * strlen(key_cmp);
-			hdrs_dict->size = strlen((char*) hdrs_dict->data);
+			int seek_dist = (int) (key_pos - (char*) hdrs_dict->data) + strlen(key_cmp);
+
+			hdrs_dict->size = hdrs_dict->size - seek_dist;
+			memmove(hdrs_dict->data, hdrs_dict->data + seek_dist, hdrs_dict->size);
 
 			/* Seek through spaces */
 
-			hdrs_dict = sseek(hdrs_dict, " ", LONG_MAX, PROXY_MODE_PERMIT);
+			hdrs_dict = sseek(hdrs_dict, " ", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 			if (hdrs_dict == NULL || hdrs_dict->data == NULL || hdrs_dict->size <= 0)
 				continue;
@@ -269,7 +271,7 @@ struct http_request* parse_http_request(struct proxy_data* request)
 			/* Get the index number of header in http_request{} */
 
 			hdr_index = NULL;
-			scopy(hdrs_dict, " ", &hdr_index, LONG_MAX, PROXY_MODE_DELIMIT);
+			hdrs_dict = scopy(hdrs_dict, " ", &hdr_index, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_FREE_INPUT);
 
 			if (hdr_index == NULL)
 				continue;
@@ -284,6 +286,8 @@ struct http_request* parse_http_request(struct proxy_data* request)
 			place_proxy_data(cus_hdrs_bag, &((struct proxy_data) {(void*) hdr_key, strlen(hdr_key) + 1}));
 			place_proxy_data(cus_hdrs_bag, &((struct proxy_data) {(void*) hdr_value, strlen(hdr_value) + 1}));
 		}
+
+		free_proxy_data(&hdrs_dict);
 	}
 
 	/* Fill s_request{}->custom_headers */
@@ -313,7 +317,6 @@ struct http_request* parse_http_request(struct proxy_data* request)
 	free_proxy_bag(&cus_hdrs_bag);
 
 	return s_request;
-
 }
 
 struct http_response* parse_http_response(struct proxy_data *response)
@@ -332,10 +335,9 @@ struct http_response* parse_http_response(struct proxy_data *response)
 
 	/* Segregate Response Headers and Body */
 
-	struct proxy_data* hdrs_data = (struct proxy_data*) malloc(sizeof(struct proxy_data));
+	struct proxy_data* hdrs_data = create_proxy_data((long) (term_seq - (char*) response->data) + (4 * sizeof(char)));
 
-	hdrs_data->data = response->data;
-	hdrs_data->size = (long) (term_seq - (char*) response->data) + (4 * sizeof(char));
+	memcpy(hdrs_data->data, response->data, hdrs_data->size);
 
 	if (response->size - hdrs_data->size > 0) {
 		s_response->body = create_proxy_data(response->size - hdrs_data->size);
@@ -346,7 +348,7 @@ struct http_response* parse_http_response(struct proxy_data *response)
 
 	/* Seek through spaces */
 
-	hdrs_data = sseek(hdrs_data, " ", LONG_MAX, PROXY_MODE_PERMIT);
+	hdrs_data = sseek(hdrs_data, " ", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 	if (hdrs_data == NULL || hdrs_data->data == NULL || hdrs_data->size <= 0)
 		return NULL;
@@ -356,12 +358,12 @@ struct http_response* parse_http_response(struct proxy_data *response)
 	if (strncasecmp((char*) hdrs_data->data, "HTTP/", 5) != 0)
 		return NULL;
 
-	hdrs_data->data = hdrs_data->data + (sizeof(char) * 5);
-	hdrs_data->size = hdrs_data->size - (sizeof(char) * 5);
+	hdrs_data->size = hdrs_data->size - 5;
+	memmove(hdrs_data->data, hdrs_data->data + 5, hdrs_data->size);
 
 	s_response->version = NULL;
 	hdrs_data = scopy(hdrs_data, " ", &s_response->version, LONG_MAX, PROXY_MODE_DELIMIT \
-			| PROXY_MODE_NULL_RESULT | PROXY_MODE_SCOPY_SSEEK_PERMIT);
+			| PROXY_MODE_NULL_RESULT | PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_FREE_INPUT);
 
 	if (hdrs_data == NULL || hdrs_data->data == NULL || hdrs_data->size <= 0 || \
 			s_response->version == NULL)
@@ -371,7 +373,7 @@ struct http_response* parse_http_response(struct proxy_data *response)
 
 	s_response->status_code = NULL;
 	hdrs_data = scopy(hdrs_data, " ", &s_response->status_code, LONG_MAX, PROXY_MODE_DELIMIT | \
-			PROXY_MODE_NULL_RESULT | PROXY_MODE_SCOPY_SSEEK_PERMIT);
+			PROXY_MODE_NULL_RESULT | PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_FREE_INPUT);
 
 	if (hdrs_data == NULL || hdrs_data->data == NULL || hdrs_data->size <= 0 || \
 			s_response->status_code == NULL)
@@ -381,7 +383,7 @@ struct http_response* parse_http_response(struct proxy_data *response)
 
 	s_response->status = NULL;
 	hdrs_data = scopy(hdrs_data, " \r\n", &s_response->status, LONG_MAX, PROXY_MODE_DELIMIT | \
-			PROXY_MODE_NULL_RESULT);
+			PROXY_MODE_NULL_RESULT | PROXY_MODE_FREE_INPUT);
 
 	if (hdrs_data == NULL || hdrs_data->data == NULL || hdrs_data->size <= 0 || \
 			s_response->status == NULL)
@@ -396,7 +398,7 @@ struct http_response* parse_http_response(struct proxy_data *response)
 	for ( ; ; ) {
 		/* Seek through spaces "\r\n" */
 
-		hdrs_data = sseek(hdrs_data, " \r\n", LONG_MAX, PROXY_MODE_PERMIT);
+		hdrs_data = sseek(hdrs_data, " \r\n", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (hdrs_data == NULL || hdrs_data->data == NULL || hdrs_data->size <= 0)
 			break;
@@ -405,7 +407,7 @@ struct http_response* parse_http_response(struct proxy_data *response)
 
 		hdr_key = NULL;
 		hdrs_data = scopy(hdrs_data, " :", &hdr_key, LONG_MAX, PROXY_MODE_DELIMIT | \
-				PROXY_MODE_NULL_RESULT | PROXY_MODE_SCOPY_SSEEK_PERMIT);
+				PROXY_MODE_NULL_RESULT | PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (hdrs_data == NULL || hdrs_data->data == NULL || hdrs_data->size <= 0 || \
 				hdr_key == NULL)
@@ -413,35 +415,31 @@ struct http_response* parse_http_response(struct proxy_data *response)
 
 		/* Get response header value */
 
-		hdrs_data = scopy(hdrs_data, "\r\n", &hdr_value, LONG_MAX, PROXY_MODE_DELIMIT);
+		hdrs_data = scopy(hdrs_data, "\r\n", &hdr_value, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_FREE_INPUT);
 
 		/* Locate occurrence of hdr_key in hdrs_dict */
 
-		char* key_cmp = (char*) malloc(sizeof(char) * (strlen(hdr_key) + 3));
+		char* key_cmp = strappend(3, " ", hdr_key, " ");
 
-		key_cmp[0] = ' ';
-		memcpy(key_cmp + 1, hdr_key, strlen(hdr_key));
-		key_cmp[strlen(hdr_key) + 1] = ' ';
-		key_cmp[strlen(hdr_key) + 2] = '\0';
+		struct proxy_data* hdrs_dict = create_proxy_data(strlen(HTTP_CONSTANT_RESPONSE_HEADERS_MAPPING));
 
-		struct proxy_data* hdrs_dict = (struct proxy_data*) malloc(sizeof(struct proxy_data));
+		memcpy(hdrs_dict->data, (void*) HTTP_CONSTANT_RESPONSE_HEADERS_MAPPING, hdrs_dict->size);
 
-		hdrs_dict->data = HTTP_CONSTANT_RESPONSE_HEADERS_MAPPING;
-		hdrs_dict->size = sizeof(char) * strlen((char*) hdrs_dict->data);
-
-		hdrs_dict->data = (void*) strcaselocate((char*) hdrs_dict->data, key_cmp, 0, hdrs_dict->size);
+		char* key_pos = strcaselocate((char*) hdrs_dict->data, key_cmp, 0, hdrs_dict->size);
 
 		/* If hdr_key found then insert in s_response{} else in s_response{}->custom_headers */
 
-		if (hdrs_dict->data != NULL) {
-			/* Recompute the hdrs_dict size */
+		if (key_pos != NULL) {
+			/* Recompute the hdrs_dict size and shift hdrs_dict->data */
 
-			hdrs_dict->data = hdrs_dict->data + sizeof(char) * strlen(key_cmp);
-			hdrs_dict->size = strlen((char*) hdrs_dict->data);
+			int seek_dist = (int) (key_pos - (char*) hdrs_dict->data) + strlen(key_cmp);
+
+			hdrs_dict->size = hdrs_dict->size - seek_dist;
+			memmove(hdrs_dict->data, hdrs_dict->data + seek_dist, hdrs_dict->size);
 
 			/* Seek through spaces */
 
-			hdrs_dict = sseek(hdrs_dict, " ", LONG_MAX, PROXY_MODE_PERMIT);
+			hdrs_dict = sseek(hdrs_dict, " ", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 			if (hdrs_dict == NULL || hdrs_dict->data == NULL || hdrs_dict->size <= 0)
 				continue;
@@ -449,7 +447,7 @@ struct http_response* parse_http_response(struct proxy_data *response)
 			/* Get the index number of header in http_response{} */
 
 			hdr_index = NULL;
-			scopy(hdrs_dict, " ", &hdr_index, LONG_MAX, PROXY_MODE_DELIMIT);
+			hdrs_dict = scopy(hdrs_dict, " ", &hdr_index, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_FREE_INPUT);
 
 			if (hdr_index == NULL)
 				continue;
@@ -464,6 +462,8 @@ struct http_response* parse_http_response(struct proxy_data *response)
 			place_proxy_data(cus_hdrs_bag, &((struct proxy_data) {(void*) hdr_key, strlen(hdr_key) + 1}));
 			place_proxy_data(cus_hdrs_bag, &((struct proxy_data) {(void*) hdr_value, strlen(hdr_value) + 1}));
 		}
+
+		free_proxy_data(&hdrs_dict);
 	}
 
 	/* Fill s_response{}->custom_headers */
@@ -567,12 +567,12 @@ int http_method(struct proxy_client* px_client, struct proxy_data* http_request,
 				break;
 		}
 
+		free(hdr_data.data);
+
 		/* Append response headers to http_results */
 
-		hdr_data.data = (void*) flatten_proxy_bag(hdr_bag);
-		hdr_data.size = sizeof(struct proxy_data);
-
-		place_proxy_data(http_results, &hdr_data);
+		place_proxy_data(http_results, &(struct proxy_data) {flatten_proxy_bag(hdr_bag), sizeof(struct proxy_data)});
+		free_proxy_bag(&hdr_bag);
 	}
 
 	/* HTTP Response read procedure */
@@ -609,12 +609,12 @@ int http_method(struct proxy_client* px_client, struct proxy_data* http_request,
 				break;
 		}
 
+		free(rsp_data.data);
+
 		/* Append Response data to http_results */
 
-		rsp_data.data = (void*) flatten_proxy_bag(rsp_bag);
-		rsp_data.size = sizeof(struct proxy_data);
-
-		place_proxy_data(http_results, &rsp_data);
+		place_proxy_data(http_results, &(struct proxy_data) {flatten_proxy_bag(rsp_bag), sizeof(struct proxy_data)});
+		free_proxy_bag(&rsp_bag);
 	}
 
 	return PROXY_ERROR_NONE;

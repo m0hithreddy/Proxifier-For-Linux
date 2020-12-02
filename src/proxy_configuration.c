@@ -31,9 +31,7 @@ int get_proxy_handlers(char* config_file, struct proxy_bag* gh_results)
 
 	struct proxy_bag* config_bag = create_proxy_bag();
 
-	struct proxy_data* config_data = (struct proxy_data*) malloc(sizeof(struct proxy_data));
-	config_data->data = malloc(PROXY_MAX_TRANSACTION_SIZE);
-	config_data->size = PROXY_MAX_TRANSACTION_SIZE;
+	struct proxy_data* config_data = create_proxy_data(PROXY_MAX_TRANSACTION_SIZE);
 
 	long rd_status = 0;
 
@@ -67,7 +65,7 @@ int get_proxy_handlers(char* config_file, struct proxy_bag* gh_results)
 	for ( ; ; ) {
 		/* Skip the spaces and empty lines */
 
-		config_data = sseek(config_data, " \n", LONG_MAX, PROXY_MODE_PERMIT);
+		config_data = sseek(config_data, " \n", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (config_data == NULL || config_data->data == NULL || config_data->size <= 0)
 			return PROXY_ERROR_NONE;
@@ -76,7 +74,7 @@ int get_proxy_handlers(char* config_file, struct proxy_bag* gh_results)
 
 		if (((char*) config_data->data)[0] == '#')	{	/* If text is starting with '#',
 		 consider the whole line as comment. */
-			config_data = sseek(config_data, "\n", LONG_MAX, PROXY_MODE_DELIMIT);
+			config_data = sseek(config_data, "\n", LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_FREE_INPUT);
 		}
 		else {	// read conf_key or conf_value.
 			if (((char*) config_data->data)[0] == '\'' || \
@@ -85,21 +83,21 @@ int get_proxy_handlers(char* config_file, struct proxy_bag* gh_results)
 
 				int quote = ((char*) config_data->data)[0] == '\'' ? 1 : 0;
 
-				config_data->data = config_data->data + 1;
 				config_data->size = config_data->size - 1;
+				memmove(config_data->data, config_data->data + 1, config_data->size);
 
 				config_data = scopy(config_data, quote ? "'" : "\"", key_read ? \
-						(conf_value = NULL, &conf_value) : (conf_key = NULL, &conf_key), LONG_MAX, PROXY_MODE_DELIMIT);
+						(conf_value = NULL, &conf_value) : (conf_key = NULL, &conf_key), LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_FREE_INPUT);
 
 				if (config_data == NULL || config_data->data == NULL || config_data->size < 1)
 					return PROXY_ERROR_NONE;
 
-				config_data->data = config_data->data + 1;
 				config_data->size = config_data->size - 1;
+				memmove(config_data->data, config_data->data + 1, config_data->size);
 			}
 			else {
 				config_data = scopy(config_data, " \n#", key_read ? (conf_value = NULL, &conf_value) : \
-						(conf_key = NULL, &conf_key), LONG_MAX, PROXY_MODE_DELIMIT);
+						(conf_key = NULL, &conf_key), LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_FREE_INPUT);
 			}
 
 			if (key_read) {
@@ -190,19 +188,19 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 		return PROXY_ERROR_RETRY;
 	}
 	else if (strcasecmp(conf_key, "proxy_server_address") == 0) {
-		struct proxy_data* value_data = (struct proxy_data*) malloc(sizeof(struct proxy_data));
-		value_data->data = conf_value;
-		value_data->size = strlen(conf_value);
-
+		struct proxy_data* value_data = create_proxy_data(strlen(conf_value));
+		
+		memcpy(value_data->data, conf_value, value_data->size);
+		
 		/* Seek the spaces and commas */
 
-		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT);
+		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (value_data == NULL || value_data->data == NULL || value_data->size <= 0)
 			return PROXY_ERROR_RETRY;
 
 		char* hostname = NULL;
-		scopy(value_data, " ,", &hostname, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_NULL_RESULT);
+		scopy(value_data, " ,", &hostname, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_NULL_RESULT | PROXY_MODE_FREE_INPUT);
 
 		if (hostname == NULL)
 			return PROXY_ERROR_RETRY;
@@ -212,19 +210,19 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 		return PROXY_ERROR_RETRY;
 	}
 	else if (strcasecmp(conf_key, "proxy_server_port") == 0) {
-		struct proxy_data* value_data = (struct proxy_data*) calloc(1, sizeof(struct proxy_data));
-		value_data->data = conf_value;
-		value_data->size = strlen(conf_value);
+		struct proxy_data* value_data = create_proxy_data(strlen(conf_value));
+
+		memcpy(value_data->data, conf_value, value_data->size);
 
 		/* Seek the spaces and commas */
 
-		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT);
+		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (value_data == NULL || value_data->data == NULL || value_data->size <= 0)
 			return PROXY_ERROR_RETRY;
 
 		char* port = NULL;
-		scopy(value_data, " ,", &port, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_NULL_RESULT);
+		scopy(value_data, " ,", &port, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_NULL_RESULT | PROXY_MODE_FREE_INPUT);
 
 		if (port == NULL)
 			return PROXY_ERROR_RETRY;
@@ -250,13 +248,13 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 		return PROXY_ERROR_RETRY;
 	}
 	else if (strcasecmp(conf_key, "proxy_redirection_port") == 0) {
-		struct proxy_data* value_data = (struct proxy_data*) malloc(sizeof(struct proxy_data));
-		value_data->data = conf_value;
-		value_data->size = strlen(conf_value);
+		struct proxy_data* value_data = create_proxy_data(strlen(conf_value));
+
+		memcpy(value_data->data, conf_value, value_data->size);
 
 		/* Seek through spaces and commas */
 
-		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT);
+		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (value_data == NULL || value_data->data == NULL || value_data->size <= 0)
 			return PROXY_ERROR_FATAL;
@@ -269,7 +267,7 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 		for ( ; ; ) {
 			port = NULL;
 			value_data = scopy(value_data, " ,", &port, LONG_MAX, PROXY_MODE_DELIMIT | \
-					PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_NULL_RESULT);
+					PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_NULL_RESULT | PROXY_MODE_FREE_INPUT);
 
 			if (port == NULL)
 				break;

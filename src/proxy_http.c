@@ -475,13 +475,13 @@ int fill_http_proxy_handler(char* conf_key, char* conf_value, struct proxy_handl
 
 	if (strcasecmp(conf_key, "http_proxy_method_get") == 0 || strcasecmp(conf_key, "http_proxy_method_connect") == 0) {
 
-		struct proxy_data* value_data = (struct proxy_data*) malloc(sizeof(struct proxy_data));
-		value_data->data = conf_value;
-		value_data->size = strlen(conf_value);
-
+		struct proxy_data* value_data = create_proxy_data(strlen(conf_value));
+		
+		memcpy(value_data->data, conf_value, value_data->size);
+		
 		/* Seek through spaces and commas */
 
-		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT);
+		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (value_data == NULL || value_data->data == NULL || value_data->size <= 0)
 			return PROXY_ERROR_NONE;
@@ -495,7 +495,7 @@ int fill_http_proxy_handler(char* conf_key, char* conf_value, struct proxy_handl
 
 			port = NULL;
 			value_data = scopy(value_data, " ,", &port, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_NULL_RESULT | \
-					PROXY_MODE_SCOPY_SSEEK_PERMIT);
+					PROXY_MODE_SCOPY_SSEEK_PERMIT | PROXY_MODE_FREE_INPUT);
 
 			if (port == NULL)
 				break;
@@ -518,6 +518,7 @@ int fill_http_proxy_handler(char* conf_key, char* conf_value, struct proxy_handl
 		}
 
 		free_proxy_bag(&ports_bag);
+		free_proxy_data(&value_data);
 	}
 	else
 		return PROXY_ERROR_FATAL;
