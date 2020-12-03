@@ -26,8 +26,10 @@ struct proxy_data* create_proxy_data(long px_data_size)
 
 	px_data->data = malloc(px_data_size);
 
-	if (px_data->data == NULL)
+	if (px_data->data == NULL) {
+		free(px_data);
 		return NULL;
+	}
 
 	px_data->size = px_data_size;
 
