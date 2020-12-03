@@ -28,8 +28,6 @@ ${srcdir}/src/proxy_configuration.c
 ${srcdir}/src/proxy_configuration.h
 ${srcdir}/src/http.c
 ${srcdir}/src/http.h
-${srcdir}/src/bit.c
-${srcdir}/src/bit.h
 ${srcdir}/src/base64.c
 ${srcdir}/src/base64.h
 ${srcdir}/src/firewall.c

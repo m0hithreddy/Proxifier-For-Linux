@@ -109,7 +109,7 @@ am_proxifier_OBJECTS = src/proxifier.$(OBJEXT) src/proxy.$(OBJEXT) \
 	src/proxy_http.$(OBJEXT) src/proxy_socket.$(OBJEXT) \
 	src/proxy_structures.$(OBJEXT) src/proxy_functions.$(OBJEXT) \
 	src/proxy_configuration.$(OBJEXT) src/http.$(OBJEXT) \
-	src/base64.$(OBJEXT) src/firewall.$(OBJEXT) src/bit.$(OBJEXT)
+	src/base64.$(OBJEXT) src/firewall.$(OBJEXT)
 proxifier_OBJECTS = $(am_proxifier_OBJECTS)
 proxifier_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -127,7 +127,7 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = src/$(DEPDIR)/base64.Po src/$(DEPDIR)/bit.Po \
+am__depfiles_remade = src/$(DEPDIR)/base64.Po \
 	src/$(DEPDIR)/firewall.Po src/$(DEPDIR)/http.Po \
 	src/$(DEPDIR)/proxifier.Po src/$(DEPDIR)/proxy.Po \
 	src/$(DEPDIR)/proxy_configuration.Po \
@@ -351,8 +351,6 @@ src/base64.c \
 src/base64.h \
 src/firewall.c \
 src/firewall.h \
-src/bit.c \
-src/bit.h \
 config.h
 
 AM_CFLAGS = -I$(abs_srcdir)/src -I$(abs_srcdir)
@@ -481,7 +479,6 @@ src/base64.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/firewall.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
-src/bit.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 
 proxifier$(EXEEXT): $(proxifier_OBJECTS) $(proxifier_DEPENDENCIES) $(EXTRA_proxifier_DEPENDENCIES) 
 	@rm -f proxifier$(EXEEXT)
@@ -495,7 +492,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/base64.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/bit.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/firewall.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/http.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/proxifier.Po@am__quote@ # am--include-marker
@@ -884,7 +880,6 @@ clean-am: clean-binPROGRAMS clean-generic clean-local mostlyclean-am
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 		-rm -f src/$(DEPDIR)/base64.Po
-	-rm -f src/$(DEPDIR)/bit.Po
 	-rm -f src/$(DEPDIR)/firewall.Po
 	-rm -f src/$(DEPDIR)/http.Po
 	-rm -f src/$(DEPDIR)/proxifier.Po
@@ -942,7 +937,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
 		-rm -f src/$(DEPDIR)/base64.Po
-	-rm -f src/$(DEPDIR)/bit.Po
 	-rm -f src/$(DEPDIR)/firewall.Po
 	-rm -f src/$(DEPDIR)/http.Po
 	-rm -f src/$(DEPDIR)/proxifier.Po

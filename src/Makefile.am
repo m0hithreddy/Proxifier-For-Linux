@@ -21,8 +21,6 @@ src/base64.c \
 src/base64.h \
 src/firewall.c \
 src/firewall.h \
-src/bit.c \
-src/bit.h \
 config.h
 
 AM_CFLAGS=-I$(abs_srcdir)/src -I$(abs_srcdir)
