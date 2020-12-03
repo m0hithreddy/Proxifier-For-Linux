@@ -86,10 +86,13 @@ int config_fwall(struct proxy_handler* px_handler)
 			px_handler->pxl_server->hostip != NULL && px_handler->pxl_server->port != NULL) {
 		/* Redirects traffic coming from specific ports to server */
 
-		char* ports_string = "";
+		char* ports_string = calloc(1, 1);
+		char* tmp_str;
 
 		for (long port_count = 0; port_count < px_handler->px_opt->nrd_ports; \
 		port_count++) {
+			tmp_str = ports_string;
+
 			if (port_count == px_handler->px_opt->nrd_ports - 1) {
 				ports_string = strappend(2, ports_string, \
 						px_handler->px_opt->rd_ports[port_count]);
@@ -98,6 +101,8 @@ int config_fwall(struct proxy_handler* px_handler)
 				ports_string = strappend(3, ports_string, \
 						px_handler->px_opt->rd_ports[port_count], ",");
 			}
+
+			free(tmp_str);
 		}
 
 		if (px_handler->pxl_server->type == SOCK_STREAM) {
@@ -119,6 +124,8 @@ int config_fwall(struct proxy_handler* px_handler)
 					ports_string, FIREWALL_CONSTANT_TARGET_DNAT, FIREWALL_CONSTANT_REDIRECTION_ADDRESS_OPTION, \
 					strappend(3, px_handler->pxl_server->hostip, ":", px_handler->pxl_server->port), NULL);
 		}
+
+		free(ports_string);
 	}
 
 	return PROXY_ERROR_NONE;
@@ -158,10 +165,13 @@ int deconfig_fwall(struct proxy_handler* px_handler)
 			px_handler->pxl_server->hostip != NULL && px_handler->pxl_server->port != NULL) {
 		/* Remove Redirects traffic coming from specific ports to server Rule */
 
-		char* ports_string = "";
+		char* ports_string = calloc(1, 1);
+		char* tmp_str;
 
 		for (long port_count = 0; port_count < px_handler->px_opt->nrd_ports; \
 		port_count++) {
+			tmp_str = ports_string;
+
 			if (port_count == px_handler->px_opt->nrd_ports - 1) {
 				ports_string = strappend(2, ports_string, \
 						px_handler->px_opt->rd_ports[port_count]);
@@ -170,8 +180,9 @@ int deconfig_fwall(struct proxy_handler* px_handler)
 				ports_string = strappend(3, ports_string, \
 						px_handler->px_opt->rd_ports[port_count], ",");
 			}
-		}
 
+			free(tmp_str);
+		}
 
 		if (px_handler->pxl_server->type == SOCK_STREAM) {
 			execute_rule(FIREWALL_CONSTANT_PROGRAM, FIREWALL_CONSTANT_PROGRAM, FIREWALL_CONSTANT_NAT_TABLE, \
@@ -192,6 +203,8 @@ int deconfig_fwall(struct proxy_handler* px_handler)
 					ports_string, FIREWALL_CONSTANT_TARGET_DNAT, FIREWALL_CONSTANT_REDIRECTION_ADDRESS_OPTION, \
 					strappend(3, px_handler->pxl_server->hostip, ":", px_handler->pxl_server->port), NULL);
 		}
+
+		free(ports_string);
 	}
 
 	return PROXY_ERROR_NONE;
