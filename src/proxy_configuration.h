@@ -38,4 +38,6 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 
 int validate_proxy_handler(struct proxy_handler* px_handler);
 
+int free_config_state(struct config_state** _conf_state);
+
 #endif /* SRC_PROXY_CONFIGURATION_H_ */

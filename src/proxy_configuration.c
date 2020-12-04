@@ -120,10 +120,17 @@ int get_proxy_handlers(char* config_file, struct proxy_bag* gh_results)
 				if (fh_return == PROXY_ERROR_NONE) {
 					place_proxy_data(gh_results, &((struct proxy_data) {(void*) conf_state->px_handler, \
 						sizeof(struct proxy_handler)}));
-					conf_state = NULL;
+					
+					/* Just free the px_handler structure not the contents of it, 
+					They are in use */
+
+					free(conf_state->px_handler); conf_state->px_handler = NULL;	
+
+					free_config_state(&conf_state);
 				}
-				else if (fh_return != PROXY_ERROR_RETRY)
-					conf_state = NULL;
+				else if (fh_return != PROXY_ERROR_RETRY) {
+					free_config_state(&conf_state);					
+				}
 			}
 
 			key_read = !key_read;
@@ -207,16 +214,20 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (value_data == NULL || value_data->data == NULL || value_data->size <= 0)
-			return PROXY_ERROR_RETRY;
+			goto psa_return;
 
 		char* hostname = NULL;
-		scopy(value_data, " ,", &hostname, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_NULL_RESULT | PROXY_MODE_FREE_INPUT);
+		value_data = scopy(value_data, " ,", &hostname, LONG_MAX, PROXY_MODE_DELIMIT | \
+							PROXY_MODE_NULL_RESULT | PROXY_MODE_FREE_INPUT);
 
 		if (hostname == NULL)
-			return PROXY_ERROR_RETRY;
+			goto psa_return;
 
 		conf_state->px_handler->px_opt->px_server = strdup(hostname);
 
+		psa_return:
+
+		free_proxy_data(&value_data);
 		return PROXY_ERROR_RETRY;
 	}
 	else if (strcasecmp(conf_key, "proxy_server_port") == 0) {
@@ -229,16 +240,19 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (value_data == NULL || value_data->data == NULL || value_data->size <= 0)
-			return PROXY_ERROR_RETRY;
+			goto psp_return;
 
 		char* port = NULL;
-		scopy(value_data, " ,", &port, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_NULL_RESULT | PROXY_MODE_FREE_INPUT);
+		value_data = scopy(value_data, " ,", &port, LONG_MAX, PROXY_MODE_DELIMIT | PROXY_MODE_NULL_RESULT | PROXY_MODE_FREE_INPUT);
 
 		if (port == NULL)
-			return PROXY_ERROR_RETRY;
+			goto psp_return;
 
 		conf_state->px_handler->px_opt->px_port = strdup(port);
 
+		psp_return:
+
+		free_proxy_data(&value_data);
 		return PROXY_ERROR_RETRY;
 	}
 	else if (strcasecmp(conf_key, "proxy_server_username") == 0) {
@@ -267,7 +281,7 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
 		if (value_data == NULL || value_data->data == NULL || value_data->size <= 0)
-			return PROXY_ERROR_FATAL;
+			goto prp_return;
 
 		/* Loop through string to get redirection ports */
 
@@ -290,28 +304,27 @@ int fill_proxy_handler(char* conf_key, char* conf_value, struct config_state* co
 
 		free_proxy_bag(&ports_bag);
 
+		prp_return:
+		
+		free_proxy_data(&value_data);
 		return PROXY_ERROR_RETRY;
 	}
 
 	/* Prepare compare buffer */
 
-	int key_len = strlen(conf_key);
-	char* key_buf = (char*) malloc(sizeof(char) * (key_len + 3));
-
-	key_buf[0] = ' ';
-	memcpy(key_buf + 1, conf_key, sizeof(char) * key_len);
-	key_buf[key_len + 1] = ' ';
-	key_buf[key_len + 2] = '\0';
+	char* key_buf = strappend(3, " ", conf_key, " ");
 
 	/* HTTP_PROXY specific configuration options */
 
 	if (strcaselocate(HTTP_PROXY_CONFIGURATION_OPTIONS, key_buf, 0, \
 			strlen(HTTP_PROXY_CONFIGURATION_OPTIONS)) != NULL) {
+		free(key_buf);
 		if (fill_http_proxy_handler(conf_key, conf_value, conf_state->px_handler) != PROXY_ERROR_NONE)
 			return PROXY_ERROR_FATAL;
 
 		return PROXY_ERROR_RETRY;
 	}
+	free(key_buf);
 
 	return PROXY_ERROR_FATAL;
 }
@@ -343,4 +356,18 @@ int validate_proxy_handler(struct proxy_handler* px_handler)
 		return PROXY_ERROR_INVAL;
 
 	return PROXY_ERROR_NONE;
+}
+
+int free_config_state(struct config_state** _conf_state) {
+	if (_conf_state == NULL || *_conf_state == NULL)
+		return PROXY_ERROR_INVAL;
+
+		struct config_state* conf_state = *_conf_state;
+
+		int fcs_return = free_proxy_handler(&conf_state->px_handler);
+		free(conf_state);
+
+		*_conf_state = NULL;
+
+		return fcs_return;
 }
