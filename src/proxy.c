@@ -53,7 +53,7 @@ struct proxy_options* create_proxy_options(struct proxy_options* px_opt)
 			sizeof(struct proxy_options));
 
 	if (dup_opt == NULL)
-		return NULL;
+		goto cpo_error;
 
 	/* Proxy Server information */
 
@@ -61,28 +61,28 @@ struct proxy_options* create_proxy_options(struct proxy_options* px_opt)
 		dup_opt->px_server = strdup(px_opt->px_server);
 
 		if (dup_opt->px_server == NULL)
-			return NULL;
+			goto cpo_error;
 	}
 
 	if (px_opt->px_port != NULL) {
 		dup_opt->px_port = strdup(px_opt->px_port);
 
 		if (dup_opt->px_port == NULL)
-			return NULL;
+			goto cpo_error;
 	}
 
 	if (px_opt->px_username != NULL) {
 		dup_opt->px_username = strdup(px_opt->px_username);
 
 		if (dup_opt->px_username == NULL)
-			return NULL;
+			goto cpo_error;
 	}
 
 	if (px_opt->px_password != NULL) {
 		dup_opt->px_password = strdup(px_opt->px_password);
 
 		if (dup_opt->px_password == NULL)
-			return NULL;
+			goto cpo_error;
 	}
 
 	/* Redirection variables */
@@ -107,12 +107,17 @@ struct proxy_options* create_proxy_options(struct proxy_options* px_opt)
 		dup_opt->sigmask = memndup(px_opt->sigmask, sizeof(sigset_t));
 
 		if (dup_opt->sigmask == NULL)
-			return NULL;
+			goto cpo_error;
 	}
 
 	dup_opt->signo = px_opt->signo;
 
 	return dup_opt;
+
+	cpo_error:
+	
+	free_proxy_options(&dup_opt);
+	return NULL;
 }
 
 int free_proxy_options(struct proxy_options** _px_opt)
@@ -204,7 +209,7 @@ struct proxy_request* create_proxy_request(struct proxy_handler* px_handler)
 		px_request->px_opt = create_proxy_options(px_handler->px_opt);
 
 		if (px_request->px_opt == NULL)
-			return NULL;
+			goto cpr_error;
 	}
 
 	/* Thread Variables */
@@ -225,12 +230,17 @@ struct proxy_request* create_proxy_request(struct proxy_handler* px_handler)
 
 	if (px_request->protocol == PROXY_PROTOCOL_HTTP) {
 		if (fill_http_proxy_request(px_handler, px_request) != PROXY_ERROR_NONE)
-			return NULL;
+			goto cpr_error;
 	}
 	else
-		return NULL;
+		goto cpr_error;
 
 	return px_request;
+
+	cpr_error:
+
+	free_proxy_request(&px_request);
+	return NULL;
 }
 
 int free_proxy_request(struct proxy_request** _px_request)
