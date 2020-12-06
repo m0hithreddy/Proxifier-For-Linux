@@ -99,8 +99,7 @@ int init_proxy_client(struct proxy_client* px_client)
 		goto init_error;
 	}
 
-	for (rp = result; rp != NULL; rp = rp->ai_next)
-	{
+	for (rp = result; rp != NULL; rp = rp->ai_next) {
 		px_client->sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 
 		if (px_client->sockfd == -1)
@@ -114,18 +113,6 @@ int init_proxy_client(struct proxy_client* px_client)
 			if (bind(px_client->sockfd, rp->ai_addr, rp->ai_addrlen) != 0)
 				goto next;
 
-			/* Get the port to which socket binded */
-
-			struct sockaddr_storage sock_res; int sock_len = sizeof(struct sockaddr_storage);
-
-			if (getsockname(px_client->sockfd, (struct sockaddr*) &sock_res, &sock_len) != 0)
-				goto next;
-
-			px_client->port = (char*) malloc(sizeof(char) * 6);  // Max port value 65535
-
-			snprintf(px_client->port, 6, "%d", htons((rp->ai_family == AF_INET) ? \
-					((struct sockaddr_in*) &sock_res)->sin_port : ((struct sockaddr_in6*) &sock_res)->sin6_port));
-
 			if (px_client->type == SOCK_STREAM) {
 				/* Put the socket in passive mode */
 
@@ -133,20 +120,29 @@ int init_proxy_client(struct proxy_client* px_client)
 					goto next;
 			}
 
-			goto success;
+			/* Get the port to which socket binded */
+
+			struct sockaddr_storage sock_res; int sock_len = sizeof(struct sockaddr_storage);
+
+			if (getsockname(px_client->sockfd, (struct sockaddr*) &sock_res, &sock_len) != 0)
+				goto next;
+			
+			free(px_client->port);
+
+			px_client->port = (char*) malloc(sizeof(char) * 6);  // Max port value is 65536
+			snprintf(px_client->port, 6, "%d", htons((rp->ai_family == AF_INET) ? \
+					((struct sockaddr_in*) &sock_res)->sin_port : ((struct sockaddr_in6*) &sock_res)->sin6_port));
 		}
 		else {
 			/* Initiate TCP connection */
 
 			if (connect(px_client->sockfd, rp->ai_addr, rp->ai_addrlen) != 0)  // If connected.
 				goto next;
-
-			goto success;
 		}
 
 		/* If initialization succeeded */
 
-		success :
+		free(px_client->hostip);
 
 		if (rp->ai_family == AF_INET) {
 			px_client->hostip = (char*) malloc(sizeof(char) * INET_ADDRSTRLEN);
@@ -178,7 +174,6 @@ int init_proxy_client(struct proxy_client* px_client)
 
 	init_error :
 	close_proxy_client(px_client);
-	px_client->hostip = NULL;
 
 	return return_status;
 }
@@ -218,6 +213,7 @@ int free_proxy_client(struct proxy_client** px_client)
 
 	free((*px_client)->hostname);
 	free((*px_client)->port);
+	free((*px_client)->sigmask);
 	free((*px_client)->hostip);
 
 	/* Free structure */
@@ -286,6 +282,7 @@ int proxy_socket_write(struct proxy_client* px_client, struct proxy_data* px_dat
 
 		if (sigfd < 0) {
 			sw_status != NULL ? *sw_status = 0 : 0;
+			free(wr_time);
 			return PROXY_ERROR_INVAL;
 		}
 
@@ -405,6 +402,10 @@ int proxy_socket_write(struct proxy_client* px_client, struct proxy_data* px_dat
 			return_status = PROXY_ERROR_FATAL;
 	}
 
+	/* Undo timer intiliazatins */
+
+	free(wr_time);
+
 	/* Close any signalfd if opened */
 
 	if (px_client->sigmask != NULL && sigfd >= 0)
@@ -473,6 +474,7 @@ int proxy_socket_read(struct proxy_client* px_client, struct proxy_data* px_data
 
 		if (sigfd < 0) {
 			sr_status != NULL ? *sr_status = 0 : 0;
+			free(rd_time);
 			return PROXY_ERROR_INVAL;
 		}
 
@@ -595,6 +597,10 @@ int proxy_socket_read(struct proxy_client* px_client, struct proxy_data* px_data
 		if (fcntl(px_client->sockfd, F_SETFL, sock_args) < 0)
 			return_status = PROXY_ERROR_FATAL;
 	}
+
+	/* Undo timer initlizations */
+
+	free(rd_time);
 
 	/* Close any opened signalfd */
 
