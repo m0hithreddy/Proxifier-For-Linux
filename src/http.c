@@ -642,19 +642,22 @@ int free_http_request(struct http_request** _s_request) {
 	struct http_request* s_request = *_s_request;
 
 	/* Freeing request header values */
-	for (int hdr_count = 0; hdr_count < HTTP_CONSTANT_RESPONSE_HEADERS_COUNT; hdr_count++) {
+	for (int hdr_count = 0; hdr_count < HTTP_CONSTANT_REQUEST_HEADERS_COUNT; hdr_count++) {
 		free(*((char**) ((void*) s_request + hdr_count * sizeof(char*))));
 	}
 
 	/* Freeing custom header values */
-	int chdr_count = 0;
+	if (s_request->custom_headers != NULL) {
+		int chdr_count = 0;
 
-	for ( ; s_request->custom_headers != NULL && s_request->custom_headers[chdr_count] != NULL; \
-		chdr_count++) {
-		free(s_request->custom_headers[chdr_count][0]); 
-		free(s_request->custom_headers[chdr_count][1]);
+		for ( ; s_request->custom_headers[chdr_count] != NULL; chdr_count++) {
+			free(s_request->custom_headers[chdr_count][0]);
+			free(s_request->custom_headers[chdr_count][1]);
 
-		free(s_request->custom_headers[chdr_count]);
+			free(s_request->custom_headers[chdr_count]);
+		}
+
+		free(s_request->custom_headers);
 	}
 
 	/* Freeing Request Body */
@@ -684,13 +687,17 @@ int free_http_response(struct http_response** _s_response) {
 	}
 
 	/* Freeing custom header values */
-	int chdr_count = 0;
+	if (s_response->custom_headers != NULL) {
+		int chdr_count = 0;
 
-	for ( ; s_response->custom_headers != NULL && s_response->custom_headers[chdr_count] != NULL; chdr_count++) {
-		free(s_response->custom_headers[chdr_count][0]);
-		free(s_response->custom_headers[chdr_count][1]);
+		for ( ; s_response->custom_headers[chdr_count] != NULL; chdr_count++) {
+			free(s_response->custom_headers[chdr_count][0]);
+			free(s_response->custom_headers[chdr_count][1]);
 
-		free(s_response->custom_headers[chdr_count]);
+			free(s_response->custom_headers[chdr_count]);
+		}
+
+		free(s_response->custom_headers);
 	}
 
 	/* Freeing Response Body */
