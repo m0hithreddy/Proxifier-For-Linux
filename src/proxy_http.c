@@ -137,9 +137,10 @@ void* http_proxy_init(void* _px_handler)
 					&(px_request->addr_len));
 
 			if (px_request->sockfd < 0) {
+				int prev_errno = errno;
 				free_proxy_request(&px_request);
 
-				if (errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)
+				if (prev_errno == EINTR || prev_errno == EWOULDBLOCK || prev_errno == EAGAIN)
 					continue;
 				else
 					goto init_quit;
@@ -151,6 +152,8 @@ void* http_proxy_init(void* _px_handler)
 					-1, px_request->sockfd);
 
 			if (px_request->px_client == NULL) {
+				free_proxy_request(&px_request);
+				
 				goto init_quit;
 			}
 
@@ -220,8 +223,14 @@ void* http_proxy_init(void* _px_handler)
 
 void* http_proxy_handler(void* _px_request)
 {
-	struct proxy_request* px_request = (struct proxy_request*) _px_request;
+	struct proxy_request *px_request = (struct proxy_request*) _px_request;
 	struct proxy_client *px_server = NULL;
+	struct http_request *s_request = NULL;
+	struct http_response *s_response = NULL;
+	struct proxy_bag *http_results = create_proxy_bag();
+	struct proxy_data *request = NULL, *tun_data = NULL;
+	struct timeval *rd_timeo = NULL;
+	char *org_dst = NULL, *org_port = NULL;
 	int sigfd = -1;
 
 	if (px_request == NULL)
@@ -251,7 +260,7 @@ void* http_proxy_handler(void* _px_request)
 
 	/* Get the original destination IP */
 
-	char* org_dst = (char*) malloc(sizeof(char) * (org_addr.ss_family == AF_INET ? \
+	org_dst = (char*) malloc(sizeof(char) * (org_addr.ss_family == AF_INET ? \
 			INET_ADDRSTRLEN : INET6_ADDRSTRLEN));
 
 	if (org_addr.ss_family == AF_INET) {
@@ -267,7 +276,7 @@ void* http_proxy_handler(void* _px_request)
 
 	/* Get the original destination port */
 
-	char* org_port = (char*) malloc(6 * sizeof(char));
+	org_port = (char*) malloc(6 * sizeof(char));
 
 	snprintf(org_port, 6, "%d", htons(org_addr.ss_family == AF_INET ? \
 			((struct sockaddr_in*) &org_addr)->sin_port : ((struct sockaddr_in6*) &org_addr)->sin6_port));
@@ -279,8 +288,6 @@ void* http_proxy_handler(void* _px_request)
 		if (htp_data->get_ports[gport_count] == atoi(org_port)) {
 			/* Read the HTTP request from the client */
 
-			struct proxy_bag* http_results = create_proxy_bag();
-
 			if (http_method(px_request->px_client, NULL, HTTP_MODE_READ_HEADERS, \
 					http_results) != PROXY_ERROR_NONE) {
 				goto handler_quit;
@@ -288,24 +295,33 @@ void* http_proxy_handler(void* _px_request)
 
 			/* Parse the HTTP request */
 
-			struct http_request* s_request = parse_http_request((struct proxy_data*) http_results->start->data);
+			s_request = parse_http_request((struct proxy_data*) http_results->start->data);
 
-			if (s_request == NULL)
+			if (s_request == NULL) {
 				goto handler_quit;
+			}
 
 			/* Modify HTTP request for sending to  proxy server */
 
+			char *tmp_hdr = s_request->path;
 			s_request->path = strappend(3, "http://", \
 					s_request->host != NULL ? s_request->host : org_dst, s_request->path);
+			free(tmp_hdr);
 
-			s_request->version = "1.0";
+			free(s_request->version);
+			s_request->version = strdup("1.0");
+
+			free(s_request->connection);
 			s_request->connection = NULL;
 
 			if (htp_data != NULL && htp_data->authpass != NULL) {
+				free(s_request->proxy_authorization);
 				s_request->proxy_authorization = strdup(htp_data->authpass);
 			}
 
-			if (http_method(px_server, create_http_request(s_request), \
+			request = create_http_request(s_request);
+
+			if (http_method(px_server, request, \
 					HTTP_MODE_SEND_REQUEST, NULL) != PROXY_ERROR_NONE) {
 				goto handler_quit;
 			}
@@ -316,33 +332,30 @@ void* http_proxy_handler(void* _px_request)
 
 	/* Connect HTTP Proxy method */
 
-	struct http_request s_request;
-	memset(&s_request, 0, sizeof(struct http_request));
+	s_request = (struct http_request*) calloc(1, sizeof(struct http_request));
 
-	s_request.method = "CONNECT";
-	s_request.path = strappend(3, org_dst, ":", org_port);
-	s_request.version = "1.1";
-	s_request.host = strappend(3, org_dst, ":", org_port);
-	s_request.user_agent = PROXY_DEFAULT_HTTP_USER_AGENT;
+	s_request->method = strdup("CONNECT");
+	s_request->path = strappend(3, org_dst, ":", org_port);
+	s_request->version = strdup("1.1");
+	s_request->host = strappend(3, org_dst, ":", org_port);
+	s_request->user_agent = strdup(PROXY_DEFAULT_HTTP_USER_AGENT);
 
 	if (htp_data != NULL && htp_data->authpass != NULL) {
-		s_request.proxy_authorization = strdup(htp_data->authpass);
+		s_request->proxy_authorization = strdup(htp_data->authpass);
 	}
 
-	s_request.proxy_connection = "Keep-Alive";
+	s_request->proxy_connection = strdup("Keep-Alive");
 
-	struct proxy_data* request = create_http_request(&s_request);
+	request = create_http_request(s_request);
 
 	/* Send HTTP request and Read headers */
-
-	struct proxy_bag* http_results = create_proxy_bag();
 
 	if (http_method(px_server, request, HTTP_MODE_SEND_REQUEST | HTTP_MODE_READ_HEADERS, http_results) \
 			!= PROXY_ERROR_NONE) {
 		goto handler_quit;
 	}
 
-	struct http_response* s_response = parse_http_response((struct proxy_data*) http_results->start->data);
+	s_response = parse_http_response((struct proxy_data*) http_results->start->data);
 
 	/* Check if CONNECT succeeded */
 
@@ -355,7 +368,7 @@ void* http_proxy_handler(void* _px_request)
 
 	/* Timeout initializations */
 
-	struct timeval *rd_timeo = NULL, tp_timeo;
+	struct timeval tp_timeo;
 
 	if (px_request->px_opt->io_timeout > 0) {
 		rd_timeo = (struct timeval*) malloc(sizeof(struct timeval));
@@ -388,7 +401,7 @@ void* http_proxy_handler(void* _px_request)
 
 	/* Tunnel data between client and proxy server */
 
-	struct proxy_data* tun_data = create_proxy_data(PROXY_MAX_TRANSACTION_SIZE);
+	tun_data = create_proxy_data(PROXY_MAX_TRANSACTION_SIZE);
 	long rd_status = 0, rd_return = PROXY_ERROR_NONE;
 
 	for ( ; ; ) {
@@ -452,7 +465,22 @@ void* http_proxy_handler(void* _px_request)
 	}
 
 	handler_quit:
+
+	/* Free the allocated data structures */
+	free_http_request(&s_request);
+	free_http_response(&s_response);
 	free_proxy_client(&px_server);
+	free_proxy_data(&request);
+	free_proxy_data(&tun_data);
+	free(rd_timeo);
+	free(org_dst);
+	free(org_port);
+
+	for (struct proxy_pocket* px_pocket = http_results->start; px_pocket != NULL; \
+		px_pocket = px_pocket->next) {
+		free_proxy_data((struct proxy_data**) &px_pocket->data);
+	}
+	free_proxy_bag(&http_results);
 
 	if (sigfd >= 0) {
 		close(sigfd);
@@ -493,8 +521,10 @@ int fill_http_proxy_handler(char* conf_key, char* conf_value, struct proxy_handl
 
 		value_data = sseek(value_data, " ,", LONG_MAX, PROXY_MODE_PERMIT | PROXY_MODE_FREE_INPUT);
 
-		if (value_data == NULL || value_data->data == NULL || value_data->size <= 0)
+		if (value_data == NULL || value_data->data == NULL || value_data->size <= 0) {
+			free_proxy_data(&value_data);
 			return PROXY_ERROR_NONE;
+		}
 
 		/* Loop and read the ports */
 
