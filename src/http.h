@@ -89,6 +89,8 @@ Proxy-Connection 36 "
 #define HTTP_MODE_READ_HEADERS 0b010
 #define HTTP_MODE_READ_RESPONSE 0b100
 
+#define HTTP_CONSTANT_REQUEST_HEADERS_COUNT 35
+#define HTTP_CONSTANT_RESPONSE_HEADERS_COUNT 36
 #include "proxy_structures.h"
 #include "proxy_socket.h"
 
@@ -177,8 +179,10 @@ struct http_response
 	char* extension_header;
 	char* proxy_connection;
 	char ***custom_headers; /* custom[i][0]="Header" custom[i][1]="Value" custom[end]==NULL (NULL terminating) */
-	char* url;
 	struct proxy_data *body;
+
+	// Misc Entries
+	char* url;
 };
 
 struct proxy_data* create_http_request(struct http_request* s_request);
@@ -188,5 +192,9 @@ struct http_request* parse_http_request(struct proxy_data* request);
 struct http_response* parse_http_response(struct proxy_data *response);
 
 int http_method(struct proxy_client* px_client, struct proxy_data* http_request, int http_flags, struct proxy_bag* http_results);
+
+int free_http_request(struct http_request** _s_request);
+
+int free_http_response(struct http_response** _s_response);
 
 #endif /* SRC_HTTP_H_ */

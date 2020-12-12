@@ -580,9 +580,11 @@ int http_method(struct proxy_client* px_client, struct proxy_data* http_request,
 		free(hdr_data.data);
 
 		/* Append response headers to http_results */
+		struct proxy_data *px_data = flatten_proxy_bag(hdr_bag);
+		place_proxy_data(http_results, &(struct proxy_data) {px_data, sizeof(struct proxy_data)});
 
-		place_proxy_data(http_results, &(struct proxy_data) {flatten_proxy_bag(hdr_bag), sizeof(struct proxy_data)});
 		free_proxy_bag(&hdr_bag);
+		free(px_data);
 	}
 
 	/* HTTP Response read procedure */
@@ -622,10 +624,82 @@ int http_method(struct proxy_client* px_client, struct proxy_data* http_request,
 		free(rsp_data.data);
 
 		/* Append Response data to http_results */
+		struct proxy_data *px_data = flatten_proxy_bag(rsp_bag);
+		place_proxy_data(http_results, &(struct proxy_data) {px_data, sizeof(struct proxy_data)});
 
-		place_proxy_data(http_results, &(struct proxy_data) {flatten_proxy_bag(rsp_bag), sizeof(struct proxy_data)});
 		free_proxy_bag(&rsp_bag);
+		free(px_data);
 	}
+
+	return PROXY_ERROR_NONE;
+}
+
+int free_http_request(struct http_request** _s_request) {
+	if (_s_request == NULL || *_s_request == NULL) {
+		return PROXY_ERROR_INVAL;
+	}
+
+	struct http_request* s_request = *_s_request;
+
+	/* Freeing request header values */
+	for (int hdr_count = 0; hdr_count < HTTP_CONSTANT_RESPONSE_HEADERS_COUNT; hdr_count++) {
+		free(*((char**) ((void*) s_request + hdr_count * sizeof(char*))));
+	}
+
+	/* Freeing custom header values */
+	int chdr_count = 0;
+
+	for ( ; s_request->custom_headers != NULL && s_request->custom_headers[chdr_count] != NULL; \
+		chdr_count++) {
+		free(s_request->custom_headers[chdr_count][0]); 
+		free(s_request->custom_headers[chdr_count][1]);
+
+		free(s_request->custom_headers[chdr_count]);
+	}
+
+	/* Freeing Request Body */
+	free_proxy_data(&s_request->body);
+
+	/* Freeing Misc entries */
+	free(s_request->url);
+	free(s_request->hostip);
+	free(s_request->scheme);
+	free(s_request->port);
+
+	*_s_request = NULL;
+
+	return PROXY_ERROR_NONE;
+}
+
+int free_http_response(struct http_response** _s_response) {
+	if (_s_response == NULL || *_s_response == NULL) {
+		return PROXY_ERROR_INVAL;
+	}
+
+	struct http_response* s_response = *_s_response;
+
+	/* Freeing response header values */ 
+	for (int hdr_count = 0; hdr_count < HTTP_CONSTANT_RESPONSE_HEADERS_COUNT; hdr_count++) {
+		free(*((char**) ((void*) s_response + hdr_count * sizeof(char*))));
+	}
+
+	/* Freeing custom header values */
+	int chdr_count = 0;
+
+	for ( ; s_response->custom_headers != NULL && s_response->custom_headers[chdr_count] != NULL; chdr_count++) {
+		free(s_response->custom_headers[chdr_count][0]);
+		free(s_response->custom_headers[chdr_count][1]);
+
+		free(s_response->custom_headers[chdr_count]);
+	}
+
+	/* Freeing Response Body */
+	free_proxy_data(&s_response->body);
+
+	/* Freeing Misc Entries */
+	free(s_response->url); 
+
+	*_s_response = NULL;
 
 	return PROXY_ERROR_NONE;
 }
