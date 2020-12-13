@@ -1,1 +1,5 @@
-* Clear the memory allocated on the heap to prevent the memory-hogging over time.
+* Excluding and Including applications from proxy operations.
+
+Past Patches
+
+* Released a series of patches aiming to make the program memory efficient. Will release more if found any.
