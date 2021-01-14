@@ -20,7 +20,6 @@ The list of dependencies required for compiling, running and building from the s
 
 * [```autoconf```](https://github.com/autotools-mirror/autoconf) [```$ sudo apt install autoconf```]
 * [```automake```](https://github.com/autotools-mirror/automake) [```$ sudo apt install automake```]
-* [```libtool```](https://github.com/autotools-mirror/libtool) [```$ sudo apt install libtool```]
 * [```txt2man```](https://github.com/mvertes/txt2man) [```$ sudo apt install txt2man```]
 
 ## Downloading
@@ -33,19 +32,11 @@ Obtain the latest stable Proxifier sources by cloning from GitHub mirror
 
 After installing dependencies, obtaining Proxifier sources, and changing to the source directory:
 
-* Quick and Dirty Installation
-
-        $ ./configure
-        $ make all
-        $ sudo make install
-
-* Clean Installation
-
-        $ autoreconf -vfi
-        $ ./configure
-        $ make all
-        $ sudo make uninstall
-        $ sudo make install
+    $ autoreconf -vfi
+    $ ./configure
+    $ make all
+    $ sudo make uninstall
+    $ sudo make install
 
 ## Usage
 Proxifier service can be enabled as follows:

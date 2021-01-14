@@ -1,18 +1,27 @@
+#Build tools generated files
+*.in
 *config.h
 *config.status
 *config.log
 *autom4te.cache/
 *config.h.in~
 *aclocal.m4
-*.o
+configure
+*.deps
 *stamp*
 *.dirstamp
-*.deps
+build-aux
+
+#Build files
+*.o
 *Makefile
+*.service
+proxifier
+*.1
+
+#IDE files
 .autotools
 .cproject
 .project
 .settings/
-*.service
-proxifier
-*.1
+
