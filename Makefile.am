@@ -9,11 +9,6 @@ EXTRA_DIST= \
 clean-local:
 	rm -f service/*.service
 	rm -f doc/*.1
-	
-distclean-local:
-	rm -rf  *.m4
-	rm -rf *.in~
-	rm -rf autom4te.cache
 
 re-install: uninstall install
 
